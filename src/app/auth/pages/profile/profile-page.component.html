@@ -1,0 +1,47 @@
+<div class="max-w-2xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">Profile</h1>
+    <p class="text-sm text-gray-500 mt-1">Your account information</p>
+  </div>
+
+  <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <!-- Avatar & name -->
+    <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
+      <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center">
+        <span class="text-white text-xl font-bold">CR</span>
+      </div>
+      <div>
+        <h2 class="text-lg font-semibold text-gray-900">{{ user.name }}</h2>
+        <p class="text-sm text-gray-500">{{ user.occupation }}</p>
+      </div>
+    </div>
+
+    <!-- Details -->
+    <dl class="space-y-4">
+      <div class="flex items-center justify-between py-2">
+        <dt class="text-sm font-medium text-gray-500">Email</dt>
+        <dd class="text-sm text-gray-900">{{ user.email }}</dd>
+      </div>
+      <div class="flex items-center justify-between py-2">
+        <dt class="text-sm font-medium text-gray-500">Occupation</dt>
+        <dd class="text-sm text-gray-900">{{ user.occupation }}</dd>
+      </div>
+      <div class="flex items-center justify-between py-2">
+        <dt class="text-sm font-medium text-gray-500">Department</dt>
+        <dd class="text-sm text-gray-900">{{ user.department }}</dd>
+      </div>
+      <div class="flex items-center justify-between py-2">
+        <dt class="text-sm font-medium text-gray-500">Location</dt>
+        <dd class="text-sm text-gray-900">{{ user.location }}</dd>
+      </div>
+      <div class="flex items-center justify-between py-2">
+        <dt class="text-sm font-medium text-gray-500">Timezone</dt>
+        <dd class="text-sm text-gray-900">{{ user.timezone }}</dd>
+      </div>
+      <div class="flex items-center justify-between py-2">
+        <dt class="text-sm font-medium text-gray-500">Joined</dt>
+        <dd class="text-sm text-gray-900">{{ user.joinedAt }}</dd>
+      </div>
+    </dl>
+  </div>
+</div>

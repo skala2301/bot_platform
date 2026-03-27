@@ -1,0 +1,49 @@
+<div class="bg-white rounded-lg border border-gray-200 p-5 hover:shadow-md transition-shadow">
+  <!-- Header -->
+  <div class="flex items-start justify-between mb-3">
+    <h3 class="text-base font-semibold text-gray-900 truncate">{{ bot().name }}</h3>
+    @if (bot().language_code) {
+      <span class="ml-2 shrink-0 px-2 py-0.5 text-xs font-medium bg-indigo-50 text-indigo-700 rounded">
+        {{ bot().language_code }}
+      </span>
+    }
+  </div>
+
+  <!-- Details -->
+  <div class="space-y-2 mb-4 text-sm text-gray-600">
+    @if (bot().system_prompt) {
+      <p class="line-clamp-2">
+        <span class="font-medium text-gray-700">Prompt:</span>
+        {{ bot().system_prompt }}
+      </p>
+    }
+    @if (bot().tone) {
+      <p>
+        <span class="font-medium text-gray-700">Tone:</span>
+        {{ bot().tone }}
+      </p>
+    }
+  </div>
+
+  <!-- Actions -->
+  <div class="flex gap-2 pt-3 border-t border-gray-100">
+    <button
+      class="flex-1 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-md hover:bg-indigo-100 transition-colors cursor-pointer"
+      (click)="edit.emit(bot())"
+    >
+      Edit
+    </button>
+    <button
+      class="flex-1 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-md hover:bg-green-100 transition-colors cursor-pointer"
+      (click)="chat.emit(bot())"
+    >
+      Chat
+    </button>
+    <button
+      class="flex-1 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 rounded-md hover:bg-red-100 transition-colors cursor-pointer"
+      (click)="delete.emit(bot())"
+    >
+      Delete
+    </button>
+  </div>
+</div>

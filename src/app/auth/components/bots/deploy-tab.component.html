@@ -1,0 +1,65 @@
+<div class="space-y-6">
+  <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <h3 class="text-base font-semibold text-gray-900 mb-2">Deploy Chat Interface</h3>
+    <p class="text-sm text-gray-500 mb-6">
+      Share this URL to give anyone access to chat with your bot.
+    </p>
+
+    <!-- Chat URL -->
+    <div class="mb-6">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Chat URL</label>
+      <div class="flex gap-2">
+        <input
+          type="text"
+          [value]="chatUrl()"
+          readonly
+          class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-700 outline-none"
+        />
+        <button
+          class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer shrink-0"
+          (click)="copyUrl()"
+        >
+          @if (copied()) {
+            Copied!
+          } @else {
+            Copy URL
+          }
+        </button>
+      </div>
+    </div>
+
+    <!-- Embed instructions -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-2">Embed as iframe</label>
+      <pre class="bg-gray-900 text-green-400 rounded-lg p-4 text-xs overflow-x-auto">&lt;iframe
+  src="{{ chatUrl() }}"
+  width="400"
+  height="600"
+  frameborder="0"
+&gt;&lt;/iframe&gt;</pre>
+    </div>
+  </div>
+
+  <!-- Bot info -->
+  <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <h3 class="text-sm font-semibold text-gray-700 mb-3">Bot Details</h3>
+    <dl class="grid grid-cols-2 gap-4 text-sm">
+      <div>
+        <dt class="text-gray-500">Name</dt>
+        <dd class="font-medium text-gray-900">{{ bot().name }}</dd>
+      </div>
+      <div>
+        <dt class="text-gray-500">Slug</dt>
+        <dd class="font-medium text-gray-900">{{ bot().slug }}</dd>
+      </div>
+      <div>
+        <dt class="text-gray-500">Status</dt>
+        <dd class="font-medium text-gray-900 capitalize">{{ bot().status }}</dd>
+      </div>
+      <div>
+        <dt class="text-gray-500">Language</dt>
+        <dd class="font-medium text-gray-900">{{ bot().language_code || 'Not set' }}</dd>
+      </div>
+    </dl>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 8rem);
+  max-width: 48rem;
+  margin: 0 auto;
+  background-color: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
