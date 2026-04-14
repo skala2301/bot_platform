@@ -40,6 +40,7 @@ export class PublicChatPageComponent implements OnInit {
   protected readonly question = signal('');
   protected readonly sending = signal(false);
   protected readonly loading = signal(true);
+  private readonly conversationUid = signal<string | null>(null);
   protected openSources = signal<Set<string>>(new Set());
   protected openReferences = signal<Set<string>>(new Set());
 
@@ -54,9 +55,13 @@ export class PublicChatPageComponent implements OnInit {
 
   private async loadBot(uid: string): Promise<void> {
     try {
-      const data = await this.api.getBot(uid);
+      const bot = await this.api.getBot(uid);
       if (this.destroyRef.destroyed) return;
-      this.bot.set(data);
+      this.bot.set(bot);
+
+      const conversation = await this.api.createConversation(uid);
+      if (this.destroyRef.destroyed) return;
+      this.conversationUid.set(conversation.uid);
     } catch {
       // silently fail — just show generic name
     } finally {
@@ -66,8 +71,8 @@ export class PublicChatPageComponent implements OnInit {
 
   async onSend(): Promise<void> {
     const q = this.question().trim();
-    const b = this.bot();
-    if (!q || !b || this.sending()) return;
+    const convUid = this.conversationUid();
+    if (!q || !convUid || this.sending()) return;
 
     this.question.set('');
     this.sending.set(true);
@@ -76,7 +81,7 @@ export class PublicChatPageComponent implements OnInit {
     this.scrollToBottom();
 
     try {
-      const res = await this.api.query(b.uid, q);
+      const res = await this.api.sendMessage(convUid, q);
       if (this.destroyRef.destroyed) return;
       this.messages.update((msgs) => [
         ...msgs,

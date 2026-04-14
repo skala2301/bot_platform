@@ -9,6 +9,7 @@ import {
   JobResponse,
   FaqItem,
   ChatResponse,
+  Conversation,
 } from '../../interfaces/bots/bot.interface';
 
 @Injectable({ providedIn: 'root' })
@@ -106,6 +107,42 @@ export class BotApiService {
       this.http.post<ChatResponse>(
         `${this.baseUrl}/bots/${botUid}/query`,
         { question }
+      )
+    );
+  }
+
+  // ── Conversations ─────────────────────────────────
+
+  createConversation(botUid: string): Promise<Conversation> {
+    return firstValueFrom(
+      this.http.post<Conversation>(
+        `${this.baseUrl}/bots/${botUid}/conversations`,
+        {}
+      )
+    );
+  }
+
+  sendMessage(convUid: string, content: string): Promise<ChatResponse> {
+    return firstValueFrom(
+      this.http.post<ChatResponse>(
+        `${this.baseUrl}/conversations/${convUid}/messages`,
+        { content }
+      )
+    );
+  }
+
+  getConversation(convUid: string): Promise<Conversation> {
+    return firstValueFrom(
+      this.http.get<Conversation>(
+        `${this.baseUrl}/conversations/${convUid}`
+      )
+    );
+  }
+
+  deleteConversation(convUid: string): Promise<void> {
+    return firstValueFrom(
+      this.http.delete<void>(
+        `${this.baseUrl}/conversations/${convUid}`
       )
     );
   }

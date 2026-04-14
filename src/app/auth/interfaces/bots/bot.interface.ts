@@ -58,3 +58,20 @@ export interface ChatSource {
   source: string;
   score: number;
 }
+
+export interface ConversationMessage {
+  uid: string;
+  role: 'user' | 'assistant';
+  content: string;
+  tokens_used: number | null;
+  created_at: string;
+}
+
+export interface Conversation {
+  uid: string;
+  bot_uid: string;
+  session_id: string;
+  created_at: string;
+  updated_at: string;
+  messages: ConversationMessage[];
+}

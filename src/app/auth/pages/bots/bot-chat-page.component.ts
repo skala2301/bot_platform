@@ -43,6 +43,7 @@ export class BotChatPageComponent implements OnInit {
   protected readonly sending = signal(false);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
+  private readonly conversationUid = signal<string | null>(null);
 
   protected readonly botName = computed(() => this.bot()?.name ?? 'Bot');
   protected openSources = signal<Set<string>>(new Set());
@@ -66,9 +67,13 @@ export class BotChatPageComponent implements OnInit {
 
   private async loadBot(uid: string): Promise<void> {
     try {
-      const data = await this.api.getBot(uid);
+      const bot = await this.api.getBot(uid);
       if (this.destroyRef.destroyed) return;
-      this.bot.set(data);
+      this.bot.set(bot);
+
+      const conversation = await this.api.createConversation(uid);
+      if (this.destroyRef.destroyed) return;
+      this.conversationUid.set(conversation.uid);
     } catch {
       if (this.destroyRef.destroyed) return;
       this.error.set('Failed to load bot.');
@@ -79,8 +84,8 @@ export class BotChatPageComponent implements OnInit {
 
   async onSend(): Promise<void> {
     const q = this.question().trim();
-    const b = this.bot();
-    if (!q || !b || this.sending()) return;
+    const convUid = this.conversationUid();
+    if (!q || !convUid || this.sending()) return;
 
     this.question.set('');
     this.sending.set(true);
@@ -92,7 +97,7 @@ export class BotChatPageComponent implements OnInit {
     this.shouldScroll = true;
 
     try {
-      const res = await this.api.query(b.uid, q);
+      const res = await this.api.sendMessage(convUid, q);
       if (this.destroyRef.destroyed) return;
       this.messages.update((msgs) => [
         ...msgs,
