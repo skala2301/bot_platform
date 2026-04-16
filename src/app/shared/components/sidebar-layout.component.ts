@@ -1,9 +1,13 @@
 import {
   Component,
   ChangeDetectionStrategy,
+  inject,
   signal,
 } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../auth/services/auth/auth.service';
+import { AuthApiService } from '../../auth/services/auth/auth-api.service';
+import { OrgSwitcherComponent } from '../../auth/components/org/org-switcher.component';
 
 interface NavSection {
   title: string;
@@ -20,11 +24,15 @@ interface NavItem {
   selector: 'app-sidebar-layout',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, OrgSwitcherComponent],
   templateUrl: './sidebar-layout.component.html',
   styleUrl: './sidebar-layout.component.css',
 })
 export class SidebarLayoutComponent {
+  private readonly router = inject(Router);
+  private readonly authApiService = inject(AuthApiService);
+  protected readonly authService = inject(AuthService);
+
   protected readonly sidebarOpen = signal(false);
 
   protected readonly navSections: NavSection[] = [
@@ -59,4 +67,13 @@ export class SidebarLayoutComponent {
       ],
     },
   ];
+
+  async onLogout(): Promise<void> {
+    const refreshToken = this.authService.getRefreshToken();
+    if (refreshToken) {
+      try { await this.authApiService.logout(refreshToken); } catch { /* ignore */ }
+    }
+    this.authService.clearSession();
+    this.router.navigate(['/login']);
+  }
 }

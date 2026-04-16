@@ -1,0 +1,110 @@
+@if (!apiKey()) {
+  <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 mb-4">
+    Generate an API key above to see personalized code snippets.
+  </div>
+}
+
+<!-- Frontend Widget Embedding -->
+<div class="mb-6">
+  <h4 class="text-sm font-semibold text-gray-700 mb-3">Frontend — Embed the Chat Widget</h4>
+  <div class="border-b border-gray-200 mb-3">
+    <nav class="flex gap-4 -mb-px">
+      @for (tab of frontendTabs; track tab.id) {
+        <button
+          class="pb-2 text-xs font-medium border-b-2 transition-colors cursor-pointer"
+          [class.border-indigo-600]="activeFrontend() === tab.id"
+          [class.text-indigo-600]="activeFrontend() === tab.id"
+          [class.border-transparent]="activeFrontend() !== tab.id"
+          [class.text-gray-500]="activeFrontend() !== tab.id"
+          (click)="activeFrontend.set(tab.id)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </nav>
+  </div>
+
+  <div class="relative">
+    <button
+      class="absolute top-2 right-2 px-2 py-1 text-xs font-medium text-gray-300 hover:text-white bg-gray-700 rounded transition-colors cursor-pointer z-10"
+      (click)="copySnippet(
+        activeFrontend() === 'iframe' ? iframeSnippet() :
+        activeFrontend() === 'angular' ? angularSnippet() :
+        activeFrontend() === 'react' ? reactSnippet() :
+        vanillaSnippet(),
+        'fe-' + activeFrontend()
+      )"
+    >
+      {{ copiedSnippet() === 'fe-' + activeFrontend() ? 'Copied!' : 'Copy' }}
+    </button>
+
+    @switch (activeFrontend()) {
+      @case ('iframe') {
+        <pre class="bg-gray-900 text-green-400 rounded-lg p-4 text-xs overflow-x-auto">{{ iframeSnippet() }}</pre>
+      }
+      @case ('angular') {
+        <pre class="bg-gray-900 text-green-400 rounded-lg p-4 text-xs overflow-x-auto">{{ angularSnippet() }}</pre>
+      }
+      @case ('react') {
+        <pre class="bg-gray-900 text-green-400 rounded-lg p-4 text-xs overflow-x-auto">{{ reactSnippet() }}</pre>
+      }
+      @case ('vanilla') {
+        <pre class="bg-gray-900 text-green-400 rounded-lg p-4 text-xs overflow-x-auto">{{ vanillaSnippet() }}</pre>
+      }
+    }
+  </div>
+</div>
+
+<!-- Backend API Key Usage -->
+<div>
+  <h4 class="text-sm font-semibold text-gray-700 mb-3">Backend — Proxy the API Key (Server-Side)</h4>
+  <p class="text-xs text-gray-500 mb-3">
+    Keep your API key on the server. These examples show how to create a backend proxy so the key is never exposed to the browser.
+  </p>
+  <div class="border-b border-gray-200 mb-3">
+    <nav class="flex gap-4 -mb-px">
+      @for (tab of backendTabs; track tab.id) {
+        <button
+          class="pb-2 text-xs font-medium border-b-2 transition-colors cursor-pointer"
+          [class.border-indigo-600]="activeBackend() === tab.id"
+          [class.text-indigo-600]="activeBackend() === tab.id"
+          [class.border-transparent]="activeBackend() !== tab.id"
+          [class.text-gray-500]="activeBackend() !== tab.id"
+          (click)="activeBackend.set(tab.id)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </nav>
+  </div>
+
+  <div class="relative">
+    <button
+      class="absolute top-2 right-2 px-2 py-1 text-xs font-medium text-gray-300 hover:text-white bg-gray-700 rounded transition-colors cursor-pointer z-10"
+      (click)="copySnippet(
+        activeBackend() === 'curl' ? curlSnippet() :
+        activeBackend() === 'nodejs' ? nodejsSnippet() :
+        activeBackend() === 'python' ? pythonSnippet() :
+        laravelSnippet(),
+        'be-' + activeBackend()
+      )"
+    >
+      {{ copiedSnippet() === 'be-' + activeBackend() ? 'Copied!' : 'Copy' }}
+    </button>
+
+    @switch (activeBackend()) {
+      @case ('curl') {
+        <pre class="bg-gray-900 text-green-400 rounded-lg p-4 text-xs overflow-x-auto">{{ curlSnippet() }}</pre>
+      }
+      @case ('nodejs') {
+        <pre class="bg-gray-900 text-green-400 rounded-lg p-4 text-xs overflow-x-auto">{{ nodejsSnippet() }}</pre>
+      }
+      @case ('python') {
+        <pre class="bg-gray-900 text-green-400 rounded-lg p-4 text-xs overflow-x-auto">{{ pythonSnippet() }}</pre>
+      }
+      @case ('laravel') {
+        <pre class="bg-gray-900 text-green-400 rounded-lg p-4 text-xs overflow-x-auto">{{ laravelSnippet() }}</pre>
+      }
+    }
+  </div>
+</div>

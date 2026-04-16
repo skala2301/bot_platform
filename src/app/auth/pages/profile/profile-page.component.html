@@ -4,44 +4,79 @@
     <p class="text-sm text-gray-500 mt-1">Your account information</p>
   </div>
 
-  <div class="bg-white rounded-lg border border-gray-200 p-6">
-    <!-- Avatar & name -->
-    <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
-      <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center">
-        <span class="text-white text-xl font-bold">CR</span>
+  @if (user(); as u) {
+    <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+      <!-- Avatar & name -->
+      <div class="flex items-center gap-4 mb-6 pb-6 border-b border-gray-100">
+        <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center">
+          <span class="text-white text-xl font-bold">{{ initials() }}</span>
+        </div>
+        <div>
+          <h2 class="text-lg font-semibold text-gray-900">{{ displayName() }}</h2>
+          <p class="text-sm text-gray-500">{{ u.email }}</p>
+        </div>
       </div>
-      <div>
-        <h2 class="text-lg font-semibold text-gray-900">{{ user.name }}</h2>
-        <p class="text-sm text-gray-500">{{ user.occupation }}</p>
-      </div>
+
+      <!-- Details -->
+      <dl class="space-y-4">
+        <div class="flex items-center justify-between py-2">
+          <dt class="text-sm font-medium text-gray-500">Email</dt>
+          <dd class="text-sm text-gray-900">{{ u.email }}</dd>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <dt class="text-sm font-medium text-gray-500">First name</dt>
+          <dd class="text-sm text-gray-900">{{ u.first_name ?? 'Not set' }}</dd>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <dt class="text-sm font-medium text-gray-500">Last name</dt>
+          <dd class="text-sm text-gray-900">{{ u.last_name ?? 'Not set' }}</dd>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <dt class="text-sm font-medium text-gray-500">Email verified</dt>
+          <dd>
+            <span class="px-2 py-0.5 text-xs font-medium rounded-full"
+              [class.bg-green-100]="u.is_verified" [class.text-green-700]="u.is_verified"
+              [class.bg-amber-100]="!u.is_verified" [class.text-amber-700]="!u.is_verified">
+              {{ u.is_verified ? 'Verified' : 'Pending' }}
+            </span>
+          </dd>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <dt class="text-sm font-medium text-gray-500">Status</dt>
+          <dd class="text-sm text-gray-900 capitalize">{{ u.status }}</dd>
+        </div>
+        <div class="flex items-center justify-between py-2">
+          <dt class="text-sm font-medium text-gray-500">Joined</dt>
+          <dd class="text-sm text-gray-900">{{ u.created_at | date:'mediumDate' }}</dd>
+        </div>
+      </dl>
     </div>
 
-    <!-- Details -->
-    <dl class="space-y-4">
-      <div class="flex items-center justify-between py-2">
-        <dt class="text-sm font-medium text-gray-500">Email</dt>
-        <dd class="text-sm text-gray-900">{{ user.email }}</dd>
+    <!-- Organizations -->
+    @if (orgs().length > 0) {
+      <div class="bg-white rounded-lg border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h3 class="text-base font-semibold text-gray-900">Organizations</h3>
+        </div>
+        <ul class="divide-y divide-gray-100">
+          @for (org of orgs(); track org.uid) {
+            <li class="px-6 py-3 flex items-center justify-between">
+              <div>
+                <p class="text-sm font-medium text-gray-900">{{ org.name }}</p>
+                <p class="text-xs text-gray-500">{{ org.slug }}</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded-full capitalize">{{ org.plan }}</span>
+                <span class="px-2 py-0.5 text-xs font-medium rounded-full"
+                  [class.bg-green-100]="org.status === 'active'" [class.text-green-700]="org.status === 'active'"
+                  [class.bg-amber-100]="org.status !== 'active'" [class.text-amber-700]="org.status !== 'active'">
+                  {{ org.status }}
+                </span>
+              </div>
+            </li>
+          }
+        </ul>
       </div>
-      <div class="flex items-center justify-between py-2">
-        <dt class="text-sm font-medium text-gray-500">Occupation</dt>
-        <dd class="text-sm text-gray-900">{{ user.occupation }}</dd>
-      </div>
-      <div class="flex items-center justify-between py-2">
-        <dt class="text-sm font-medium text-gray-500">Department</dt>
-        <dd class="text-sm text-gray-900">{{ user.department }}</dd>
-      </div>
-      <div class="flex items-center justify-between py-2">
-        <dt class="text-sm font-medium text-gray-500">Location</dt>
-        <dd class="text-sm text-gray-900">{{ user.location }}</dd>
-      </div>
-      <div class="flex items-center justify-between py-2">
-        <dt class="text-sm font-medium text-gray-500">Timezone</dt>
-        <dd class="text-sm text-gray-900">{{ user.timezone }}</dd>
-      </div>
-      <div class="flex items-center justify-between py-2">
-        <dt class="text-sm font-medium text-gray-500">Joined</dt>
-        <dd class="text-sm text-gray-900">{{ user.joinedAt }}</dd>
-      </div>
-    </dl>
-  </div>
+    }
+  }
 </div>

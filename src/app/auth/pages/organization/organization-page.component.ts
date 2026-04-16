@@ -1,31 +1,50 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+} from '@angular/core';
+import { AuthService } from '../../services/auth/auth.service';
+import { OrgOut } from '../../interfaces/org/org.interface';
+import { OrgDetailsTabComponent } from '../../components/org/org-details-tab.component';
+import { MembersTabComponent } from '../../components/org/members-tab.component';
+import { InvitesTabComponent } from '../../components/org/invites-tab.component';
+import { RolesTabComponent } from '../../components/org/roles-tab.component';
+import { ModelsAvailableTabComponent } from '../../components/org/models-available-tab.component';
 
-interface Member {
-  name: string;
-  email: string;
-  role: string;
-  avatar: string;
+type TabId = 'details' | 'members' | 'invites' | 'roles' | 'models';
+
+interface Tab {
+  id: TabId;
+  label: string;
 }
 
 @Component({
   selector: 'app-organization-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    OrgDetailsTabComponent,
+    MembersTabComponent,
+    InvitesTabComponent,
+    RolesTabComponent,
+    ModelsAvailableTabComponent,
+  ],
   templateUrl: './organization-page.component.html',
 })
 export class OrganizationPageComponent {
-  protected readonly org = {
-    name: 'Trapezzio Inc.',
-    address: '123 Innovation Drive, Suite 400, San Francisco, CA 94107',
-    email: 'admin@trapezzio.com',
-    phone: '+1 (555) 012-3456',
-  };
+  protected readonly authService = inject(AuthService);
+  protected readonly activeTab = signal<TabId>('details');
 
-  protected readonly members: Member[] = [
-    { name: 'Carlos Rivera', email: 'carlos@trapezzio.com', role: 'Admin', avatar: 'CR' },
-    { name: 'Ana Garcia', email: 'ana@trapezzio.com', role: 'Developer', avatar: 'AG' },
-    { name: 'Mike Chen', email: 'mike@trapezzio.com', role: 'Designer', avatar: 'MC' },
-    { name: 'Sara Johnson', email: 'sara@trapezzio.com', role: 'Manager', avatar: 'SJ' },
-    { name: 'Luis Torres', email: 'luis@trapezzio.com', role: 'Developer', avatar: 'LT' },
+  protected readonly tabs: Tab[] = [
+    { id: 'details', label: 'Details' },
+    { id: 'members', label: 'Members' },
+    { id: 'invites', label: 'Invites' },
+    { id: 'roles', label: 'Roles' },
+    { id: 'models', label: 'Available Models' },
   ];
+
+  onOrgUpdated(updated: OrgOut): void {
+    this.authService.setCurrentOrg(updated);
+  }
 }

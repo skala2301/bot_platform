@@ -1,5 +1,6 @@
 export interface Bot {
   uid: string;
+  org_uid: string;
   name: string;
   slug: string;
   status: 'active' | 'inactive';
@@ -7,12 +8,16 @@ export interface Bot {
   system_prompt: string | null;
   tone: string | null;
   fallback_message: string | null;
+  model_name: string | null;
+  model_location: 'local' | 'cloud' | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface BotCreate {
   name: string;
+  model_name: string;
+  model_location: 'local' | 'cloud';
   language_code?: string | null;
   system_prompt?: string | null;
   tone?: string | null;
@@ -25,6 +30,8 @@ export interface BotUpdate {
   system_prompt?: string | null;
   tone?: string | null;
   fallback_message?: string | null;
+  model_name?: string | null;
+  model_location?: 'local' | 'cloud' | null;
 }
 
 export interface BotDocument {

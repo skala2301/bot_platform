@@ -11,6 +11,11 @@ import {
   ChatResponse,
   Conversation,
 } from '../../interfaces/bots/bot.interface';
+import {
+  ApiKeyCreate,
+  ApiKeyCreated,
+  ApiKeyOut,
+} from '../../interfaces/bots/api-key.interface';
 
 @Injectable({ providedIn: 'root' })
 export class BotApiService {
@@ -19,16 +24,20 @@ export class BotApiService {
 
   // ── Bots ──────────────────────────────────────────
 
-  listBots(): Promise<Bot[]> {
-    return firstValueFrom(this.http.get<Bot[]>(`${this.baseUrl}/bots`));
+  listBots(orgUid: string): Promise<Bot[]> {
+    return firstValueFrom(
+      this.http.get<Bot[]>(`${this.baseUrl}/orgs/${orgUid}/bots`)
+    );
   }
 
   getBot(uid: string): Promise<Bot> {
     return firstValueFrom(this.http.get<Bot>(`${this.baseUrl}/bots/${uid}`));
   }
 
-  createBot(data: BotCreate): Promise<Bot> {
-    return firstValueFrom(this.http.post<Bot>(`${this.baseUrl}/bots`, data));
+  createBot(orgUid: string, data: BotCreate): Promise<Bot> {
+    return firstValueFrom(
+      this.http.post<Bot>(`${this.baseUrl}/orgs/${orgUid}/bots`, data)
+    );
   }
 
   updateBot(uid: string, data: BotUpdate): Promise<Bot> {
@@ -143,6 +152,33 @@ export class BotApiService {
     return firstValueFrom(
       this.http.delete<void>(
         `${this.baseUrl}/conversations/${convUid}`
+      )
+    );
+  }
+
+  // ── API Keys ──────────────────────────────────────
+
+  createApiKey(botUid: string, data: ApiKeyCreate): Promise<ApiKeyCreated> {
+    return firstValueFrom(
+      this.http.post<ApiKeyCreated>(
+        `${this.baseUrl}/bots/${botUid}/api-keys`,
+        data
+      )
+    );
+  }
+
+  listApiKeys(botUid: string): Promise<ApiKeyOut[]> {
+    return firstValueFrom(
+      this.http.get<ApiKeyOut[]>(
+        `${this.baseUrl}/bots/${botUid}/api-keys`
+      )
+    );
+  }
+
+  revokeApiKey(botUid: string, keyUid: string): Promise<void> {
+    return firstValueFrom(
+      this.http.delete<void>(
+        `${this.baseUrl}/bots/${botUid}/api-keys/${keyUid}`
       )
     );
   }

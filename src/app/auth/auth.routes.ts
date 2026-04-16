@@ -46,6 +46,22 @@ export const authRoutes: Routes = [
             (m) => m.OrganizationPageComponent
           ),
       },
+      {
+        path: 'organization/create',
+        loadComponent: () =>
+          import('./pages/organization/create-org-page.component').then(
+            (m) => m.CreateOrgPageComponent
+          ),
+      },
+
+      // Invites
+      {
+        path: 'accept-invite',
+        loadComponent: () =>
+          import('./pages/invites/accept-invite-page.component').then(
+            (m) => m.AcceptInvitePageComponent
+          ),
+      },
 
       // Profile
       {

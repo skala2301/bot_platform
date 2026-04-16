@@ -95,6 +95,39 @@
   </div>
 </form>
 
+<!-- Model Selection -->
+<div class="bg-white rounded-lg border border-gray-200 p-6 mt-6">
+  <h3 class="text-base font-semibold text-gray-900 mb-1">Model</h3>
+  <p class="text-xs text-gray-500 mb-4">
+    Change the LLM that powers this bot. Current:
+    @if (bot().model_name) {
+      <span class="font-mono text-gray-700">{{ bot().model_name }}</span>
+      <span class="text-gray-400"> ({{ bot().model_location }})</span>
+    } @else {
+      <span class="italic text-gray-400">using server default</span>
+    }
+  </p>
+
+  <app-bot-model-selector
+    [modelLocation]="modelLocation()"
+    [modelName]="modelName()"
+    [disabled]="savingModel()"
+    (modelLocationChange)="modelLocation.set($event)"
+    (modelNameChange)="modelName.set($event)"
+  />
+
+  <div class="flex justify-end mt-4">
+    <button
+      type="button"
+      [disabled]="savingModel() || !modelLocation() || !modelName() || !modelChanged()"
+      (click)="onSaveModel()"
+      class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+    >
+      @if (savingModel()) { Saving... } @else { Update Model }
+    </button>
+  </div>
+</div>
+
 <!-- Confirm dialog -->
 @if (showConfirm()) {
   <app-confirm-dialog

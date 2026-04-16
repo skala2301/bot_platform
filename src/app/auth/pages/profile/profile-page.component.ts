@@ -1,19 +1,23 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  inject,
+  computed,
+} from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { AuthService } from '../../services/auth/auth.service';
 
 @Component({
   selector: 'app-profile-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DatePipe],
   templateUrl: './profile-page.component.html',
 })
 export class ProfilePageComponent {
-  protected readonly user = {
-    name: 'Carlos Rivera',
-    email: 'carlos@trapezzio.com',
-    occupation: 'Full Stack Developer',
-    department: 'Engineering',
-    location: 'San Francisco, CA',
-    timezone: 'PST (UTC-8)',
-    joinedAt: 'January 2025',
-  };
+  protected readonly authService = inject(AuthService);
+  protected readonly user = this.authService.user;
+  protected readonly orgs = this.authService.orgs;
+  protected readonly initials = this.authService.userInitials;
+  protected readonly displayName = this.authService.userDisplayName;
 }

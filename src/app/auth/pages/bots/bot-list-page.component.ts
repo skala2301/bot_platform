@@ -3,11 +3,13 @@ import {
   ChangeDetectionStrategy,
   inject,
   signal,
-  OnInit,
+  computed,
+  effect,
   DestroyRef,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { BotApiService } from '../../services/bots/bot-api.service';
+import { AuthService } from '../../services/auth/auth.service';
 import { Bot } from '../../interfaces/bots/bot.interface';
 import { BotCardComponent } from '../../components/bots/bot-card.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog.component';
@@ -19,32 +21,51 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
   imports: [RouterLink, BotCardComponent, ConfirmDialogComponent],
   templateUrl: './bot-list-page.component.html',
 })
-export class BotListPageComponent implements OnInit {
+export class BotListPageComponent {
   private readonly api = inject(BotApiService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly bots = signal<Bot[]>([]);
-  protected readonly loading = signal(true);
+  protected readonly botsLoading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly botToDelete = signal<Bot | null>(null);
 
-  ngOnInit(): void {
-    this.loadBots();
-  }
+  // UI states derived from the AuthService
+  protected readonly orgsLoaded = this.authService.orgsLoaded;
+  protected readonly currentOrgUid = this.authService.currentOrgUid;
+  protected readonly hasNoOrg = computed(
+    () => this.authService.orgsLoaded() && this.authService.orgs().length === 0
+  );
+  // Show spinner while: orgs are still being fetched, OR we have an org and bots are loading
+  protected readonly loading = computed(
+    () => (!this.orgsLoaded() && !this.currentOrgUid()) || this.botsLoading()
+  );
 
-  async loadBots(): Promise<void> {
-    this.loading.set(true);
+  // Reactively reload bots whenever the current org changes.
+  private readonly orgEffect = effect(() => {
+    const orgUid = this.currentOrgUid();
+    if (orgUid) {
+      this.loadBots(orgUid);
+    } else {
+      this.bots.set([]);
+      this.botsLoading.set(false);
+    }
+  });
+
+  async loadBots(orgUid: string): Promise<void> {
+    this.botsLoading.set(true);
     this.error.set(null);
     try {
-      const data = await this.api.listBots();
+      const data = await this.api.listBots(orgUid);
       if (this.destroyRef.destroyed) return;
       this.bots.set(data);
     } catch {
       if (this.destroyRef.destroyed) return;
       this.error.set('Failed to load bots.');
     } finally {
-      this.loading.set(false);
+      this.botsLoading.set(false);
     }
   }
 

@@ -13,6 +13,7 @@ import {
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BotApiService } from '../../services/bots/bot-api.service';
+import { WidgetApiService } from '../../services/bots/widget-api.service';
 import { Bot, ChatSource } from '../../interfaces/bots/bot.interface';
 
 interface ChatMessage {
@@ -32,6 +33,7 @@ interface ChatMessage {
 })
 export class BotChatPageComponent implements OnInit {
   private readonly api = inject(BotApiService);
+  private readonly widgetApi = inject(WidgetApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
@@ -44,6 +46,10 @@ export class BotChatPageComponent implements OnInit {
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   private readonly conversationUid = signal<string | null>(null);
+
+  protected readonly useWidgetMode = signal(false);
+  protected readonly widgetApiKey = signal('');
+  protected readonly showWidgetPanel = signal(false);
 
   protected readonly botName = computed(() => this.bot()?.name ?? 'Bot');
   protected openSources = signal<Set<string>>(new Set());
@@ -84,8 +90,11 @@ export class BotChatPageComponent implements OnInit {
 
   async onSend(): Promise<void> {
     const q = this.question().trim();
+    if (!q || this.sending()) return;
+
+    const isWidget = this.useWidgetMode() && this.widgetApiKey().trim();
     const convUid = this.conversationUid();
-    if (!q || !convUid || this.sending()) return;
+    if (!isWidget && !convUid) return;
 
     this.question.set('');
     this.sending.set(true);
@@ -97,7 +106,9 @@ export class BotChatPageComponent implements OnInit {
     this.shouldScroll = true;
 
     try {
-      const res = await this.api.sendMessage(convUid, q);
+      const res = isWidget
+        ? await this.widgetApi.chat(this.widgetApiKey().trim(), q)
+        : await this.api.sendMessage(convUid!, q);
       if (this.destroyRef.destroyed) return;
       this.messages.update((msgs) => [
         ...msgs,

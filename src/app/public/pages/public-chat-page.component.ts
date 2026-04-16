@@ -11,8 +11,9 @@ import {
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { BotApiService } from '../../auth/services/bots/bot-api.service';
-import { Bot, ChatSource } from '../../auth/interfaces/bots/bot.interface';
+import { WidgetApiService } from '../../auth/services/bots/widget-api.service';
+import { WidgetConfig } from '../../auth/interfaces/bots/widget.interface';
+import { ChatSource } from '../../auth/interfaces/bots/bot.interface';
 
 interface ChatMessage {
   role: 'user' | 'bot';
@@ -29,41 +30,49 @@ interface ChatMessage {
   styleUrl: './public-chat-page.component.css',
 })
 export class PublicChatPageComponent implements OnInit {
-  private readonly api = inject(BotApiService);
+  private readonly widgetApi = inject(WidgetApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly messagesContainer = viewChild<ElementRef>('messagesContainer');
 
-  protected readonly bot = signal<Bot | null>(null);
+  private readonly apiKey = signal<string | null>(null);
+  private readonly widgetConfig = signal<WidgetConfig | null>(null);
   protected readonly messages = signal<ChatMessage[]>([]);
   protected readonly question = signal('');
   protected readonly sending = signal(false);
   protected readonly loading = signal(true);
-  private readonly conversationUid = signal<string | null>(null);
+  protected readonly error = signal<string | null>(null);
   protected openSources = signal<Set<string>>(new Set());
   protected openReferences = signal<Set<string>>(new Set());
 
-  protected readonly botName = computed(() => this.bot()?.name ?? 'Assistant');
+  protected readonly botName = computed(() => this.widgetConfig()?.name ?? 'Assistant');
+  protected readonly hasApiKey = computed(() => !!this.apiKey());
 
   ngOnInit(): void {
-    const uid = this.route.snapshot.paramMap.get('botUid');
-    if (uid) {
-      this.loadBot(uid);
+    const key = this.route.snapshot.queryParamMap.get('api_key');
+    if (key) {
+      this.apiKey.set(key);
+      this.loadBotViaWidget(key);
+    } else {
+      this.loading.set(false);
+      this.error.set('An API key is required to access this chat.');
     }
   }
 
-  private async loadBot(uid: string): Promise<void> {
+  private async loadBotViaWidget(apiKey: string): Promise<void> {
     try {
-      const bot = await this.api.getBot(uid);
+      const config = await this.widgetApi.getConfig(apiKey);
       if (this.destroyRef.destroyed) return;
-      this.bot.set(bot);
-
-      const conversation = await this.api.createConversation(uid);
+      this.widgetConfig.set(config);
+    } catch (e: unknown) {
       if (this.destroyRef.destroyed) return;
-      this.conversationUid.set(conversation.uid);
-    } catch {
-      // silently fail — just show generic name
+      const status = (e as { status?: number })?.status;
+      if (status === 401) {
+        this.error.set('Invalid or revoked API key.');
+      } else {
+        this.error.set('Failed to load chat configuration.');
+      }
     } finally {
       this.loading.set(false);
     }
@@ -71,8 +80,8 @@ export class PublicChatPageComponent implements OnInit {
 
   async onSend(): Promise<void> {
     const q = this.question().trim();
-    const convUid = this.conversationUid();
-    if (!q || !convUid || this.sending()) return;
+    const key = this.apiKey();
+    if (!q || !key || this.sending()) return;
 
     this.question.set('');
     this.sending.set(true);
@@ -81,26 +90,33 @@ export class PublicChatPageComponent implements OnInit {
     this.scrollToBottom();
 
     try {
-      const res = await this.api.sendMessage(convUid, q);
+      const res = await this.widgetApi.chat(key, q);
       if (this.destroyRef.destroyed) return;
       this.messages.update((msgs) => [
         ...msgs,
         { role: 'bot', content: res.answer, sources: res.sources },
       ]);
-    } catch {
+    } catch (e: unknown) {
       if (this.destroyRef.destroyed) return;
-      this.messages.update((msgs) => [
-        ...msgs,
-        { role: 'bot', content: 'Sorry, something went wrong. Please try again.' },
-      ]);
+      const status = (e as { status?: number })?.status;
+      if (status === 401) {
+        this.messages.update((msgs) => [
+          ...msgs,
+          { role: 'bot', content: 'API key is invalid or has been revoked.' },
+        ]);
+      } else {
+        this.messages.update((msgs) => [
+          ...msgs,
+          { role: 'bot', content: 'Sorry, something went wrong. Please try again.' },
+        ]);
+      }
     } finally {
       this.sending.set(false);
       this.scrollToBottom();
     }
   }
 
-  
-  toggleReferences(index: string) {
+  toggleReferences(index: string): void {
     this.openReferences.update(set => {
       const next = new Set(set);
       next.has(index) ? next.delete(index) : next.add(index);
@@ -108,7 +124,7 @@ export class PublicChatPageComponent implements OnInit {
     });
   }
 
-  toggleSource(index: string) {
+  toggleSource(index: string): void {
     this.openSources.update(set => {
       const next = new Set(set);
       next.has(index) ? next.delete(index) : next.add(index);
@@ -116,7 +132,7 @@ export class PublicChatPageComponent implements OnInit {
     });
   }
 
-  sourceKey(msgIndex: number, sourceIndex: number | null = null) {
+  sourceKey(msgIndex: number, sourceIndex: number | null = null): string {
     return `${msgIndex}-${sourceIndex}`;
   }
 

@@ -1,0 +1,136 @@
+<!-- Error -->
+@if (error(); as err) {
+  <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+    {{ err }}
+  </div>
+}
+
+<!-- Create form -->
+<div class="flex gap-2 mb-4">
+  <input
+    type="text"
+    [ngModel]="newLabel()"
+    (ngModelChange)="newLabel.set($event)"
+    name="keyLabel"
+    placeholder="Key label (e.g. Production Widget)"
+    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+    [disabled]="creating()"
+  />
+  <button
+    class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+    [disabled]="creating()"
+    (click)="onCreate()"
+  >
+    @if (creating()) {
+      Generating...
+    } @else {
+      Generate Key
+    }
+  </button>
+</div>
+
+<!-- Loading -->
+@if (loading()) {
+  <div class="flex justify-center py-4">
+    <div class="w-5 h-5 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+  </div>
+} @else {
+  <!-- Keys list -->
+  @if (keys().length === 0) {
+    <p class="text-sm text-gray-400 text-center py-4">No API keys yet. Generate one to get started.</p>
+  } @else {
+    <div class="space-y-2">
+      @for (key of keys(); track key.uid) {
+        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-gray-900 truncate">
+              {{ key.label || 'Unnamed key' }}
+            </p>
+            <p class="text-xs text-gray-500">
+              Created {{ key.created_at | date:'medium' }}
+            </p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0 ml-3">
+            <span
+              class="px-2 py-0.5 text-xs font-medium rounded-full"
+              [class.bg-green-100]="key.status === 'active'"
+              [class.text-green-700]="key.status === 'active'"
+              [class.bg-gray-100]="key.status === 'revoked'"
+              [class.text-gray-500]="key.status === 'revoked'"
+            >
+              {{ key.status }}
+            </span>
+            @if (key.status === 'active') {
+              <button
+                class="px-3 py-1 text-xs font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
+                (click)="keyToRevoke.set(key)"
+              >
+                Revoke
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+}
+
+<!-- New key modal -->
+@if (newlyCreatedKey(); as nk) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div class="bg-white rounded-xl shadow-xl max-w-lg w-full mx-4 p-6">
+      <div class="flex items-center gap-2 mb-4">
+        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h3 class="text-lg font-semibold text-gray-900">API Key Created</h3>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+        <p class="text-sm text-amber-800 font-medium">
+          Copy this key now. It will not be shown again.
+        </p>
+      </div>
+
+      <label class="block text-sm font-medium text-gray-700 mb-1">Your API Key</label>
+      <div class="flex gap-2 mb-6">
+        <input
+          type="text"
+          [value]="nk.raw_key"
+          readonly
+          class="flex-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm font-mono text-gray-700 outline-none select-all"
+        />
+        <button
+          class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer shrink-0"
+          (click)="copyKey(nk.raw_key)"
+        >
+          @if (keyCopied()) {
+            Copied!
+          } @else {
+            Copy
+          }
+        </button>
+      </div>
+
+      <div class="flex justify-end">
+        <button
+          class="px-4 py-2 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-900 transition-colors cursor-pointer"
+          (click)="onDismissNewKey()"
+        >
+          Done, I've copied my key
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Revoke confirmation -->
+@if (keyToRevoke(); as k) {
+  <app-confirm-dialog
+    [title]="'Revoke API Key'"
+    [message]="'Are you sure you want to revoke this API key? All active widgets using this key will immediately stop working.'"
+    [confirmText]="'Revoke'"
+    (confirmed)="onRevokeConfirm()"
+    (cancelled)="keyToRevoke.set(null)"
+  />
+}

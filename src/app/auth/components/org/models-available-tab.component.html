@@ -1,0 +1,107 @@
+<div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+  <h3 class="text-base font-semibold text-gray-900 mb-1">Available Models</h3>
+  <p class="text-xs text-gray-500 mb-4">
+    Browse the chat models you can assign to your bots. Select a model to see its details.
+  </p>
+
+  <div class="grid sm:grid-cols-2 gap-3">
+    <!-- Model Type -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Model Type</label>
+      <select
+        [value]="location()"
+        (change)="onLocationChange($any($event.target).value)"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white"
+      >
+        <option value="local">Local</option>
+        <option value="cloud">Cloud</option>
+      </select>
+    </div>
+
+    <!-- Model Name -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Model Name</label>
+      <select
+        [value]="selectedName() ?? ''"
+        [disabled]="loading() || models().length === 0"
+        (change)="onModelChange($any($event.target).value)"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white disabled:bg-gray-50 disabled:cursor-not-allowed"
+      >
+        @if (loading()) {
+          <option value="">Loading models...</option>
+        } @else if (models().length === 0) {
+          <option value="">No models available</option>
+        } @else {
+          <option value="">Select model...</option>
+          @for (m of models(); track m.name) {
+            <option [value]="m.name">
+              {{ m.name }}@if (m.parameter_size) { — {{ m.parameter_size }} }
+            </option>
+          }
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (error(); as err) {
+    <p class="mt-3 text-xs text-red-600">{{ err }}</p>
+  }
+</div>
+
+<!-- Selected model details -->
+@if (selectedModel(); as m) {
+  <div class="bg-white rounded-lg border border-gray-200 p-6">
+    <div class="flex items-start justify-between mb-4 gap-3">
+      <div class="min-w-0">
+        <h3 class="text-base font-semibold text-gray-900 font-mono truncate">{{ m.name }}</h3>
+        <p class="text-xs text-gray-500 mt-1 capitalize">{{ m.model_type }} model &middot; {{ location() }}</p>
+      </div>
+      @if (m.parameter_size) {
+        <span class="shrink-0 px-2.5 py-1 bg-indigo-50 text-indigo-700 text-xs font-medium rounded-full">
+          {{ m.parameter_size }}
+        </span>
+      }
+    </div>
+
+    <dl class="grid sm:grid-cols-2 gap-4 text-sm">
+      <div>
+        <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</dt>
+        <dd class="mt-1 font-mono text-gray-900">{{ m.name }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Type</dt>
+        <dd class="mt-1 text-gray-900 capitalize">{{ m.model_type }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Location</dt>
+        <dd class="mt-1 text-gray-900 capitalize">{{ location() }}</dd>
+      </div>
+      @if (m.family) {
+        <div>
+          <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Family</dt>
+          <dd class="mt-1 text-gray-900">{{ m.family }}</dd>
+        </div>
+      }
+      @if (m.parameter_size) {
+        <div>
+          <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Parameters</dt>
+          <dd class="mt-1 text-gray-900">{{ m.parameter_size }}</dd>
+        </div>
+      }
+      <div>
+        <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Size</dt>
+        <dd class="mt-1 text-gray-900">{{ formatSize(m.size) }}</dd>
+      </div>
+      @if (m.modified_at) {
+        <div class="sm:col-span-2">
+          <dt class="text-xs font-medium text-gray-500 uppercase tracking-wider">Last Modified</dt>
+          <dd class="mt-1 text-gray-900">{{ formatDate(m.modified_at) }}</dd>
+        </div>
+      }
+    </dl>
+  </div>
+} @else if (!loading() && models().length > 0) {
+  <div class="bg-white rounded-lg border border-dashed border-gray-300 p-8 text-center">
+    <p class="text-sm text-gray-500">Select a model above to see its details.</p>
+  </div>
+}

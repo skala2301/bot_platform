@@ -1,0 +1,52 @@
+<div class="grid sm:grid-cols-2 gap-3">
+  <!-- Model Type (location) -->
+  <div>
+    <label for="modelType" class="block text-sm font-medium text-gray-700 mb-1">
+      Model Type <span class="text-red-500">*</span>
+    </label>
+    <select
+      id="modelType"
+      [value]="modelLocation() ?? ''"
+      (change)="onLocationChange($any($event.target).value)"
+      [disabled]="disabled()"
+      class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white disabled:bg-gray-50 disabled:cursor-not-allowed"
+    >
+      <option value="">Select type...</option>
+      <option value="local">Local</option>
+      <option value="cloud">Cloud</option>
+    </select>
+  </div>
+
+  <!-- Model Name -->
+  <div>
+    <label for="modelName" class="block text-sm font-medium text-gray-700 mb-1">
+      Model Name <span class="text-red-500">*</span>
+    </label>
+    <select
+      id="modelName"
+      [value]="modelName() ?? ''"
+      (change)="onModelChange($any($event.target).value)"
+      [disabled]="disabled() || !modelLocation() || loading()"
+      class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white disabled:bg-gray-50 disabled:cursor-not-allowed"
+    >
+      @if (!modelLocation()) {
+        <option value="">Select a type first</option>
+      } @else if (loading()) {
+        <option value="">Loading models...</option>
+      } @else if (models().length === 0) {
+        <option value="">No models available</option>
+      } @else {
+        <option value="">Select model...</option>
+        @for (m of models(); track m.name) {
+          <option [value]="m.name">
+            {{ m.name }}@if (m.parameter_size) { — {{ m.parameter_size }} }
+          </option>
+        }
+      }
+    </select>
+  </div>
+</div>
+
+@if (error(); as err) {
+  <p class="mt-2 text-xs text-red-600">{{ err }}</p>
+}

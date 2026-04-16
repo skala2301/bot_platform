@@ -1,64 +1,50 @@
 <div class="max-w-4xl mx-auto">
   <div class="mb-6">
     <h1 class="text-2xl font-bold text-gray-900">Organization</h1>
-    <p class="text-sm text-gray-500 mt-1">Manage your organization settings and team</p>
+    <p class="text-sm text-gray-500 mt-1">Manage your organization settings, members, roles, and available models</p>
   </div>
 
-  <!-- Org info -->
-  <div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-    <h2 class="text-base font-semibold text-gray-900 mb-4">Organization Details</h2>
-    <dl class="grid sm:grid-cols-2 gap-6">
-      <div>
-        <dt class="text-sm font-medium text-gray-500">Name</dt>
-        <dd class="mt-1 text-sm text-gray-900">{{ org.name }}</dd>
-      </div>
-      <div>
-        <dt class="text-sm font-medium text-gray-500">Email</dt>
-        <dd class="mt-1 text-sm text-gray-900">{{ org.email }}</dd>
-      </div>
-      <div class="sm:col-span-2">
-        <dt class="text-sm font-medium text-gray-500">Address</dt>
-        <dd class="mt-1 text-sm text-gray-900">{{ org.address }}</dd>
-      </div>
-      <div>
-        <dt class="text-sm font-medium text-gray-500">Phone</dt>
-        <dd class="mt-1 text-sm text-gray-900">{{ org.phone }}</dd>
-      </div>
-    </dl>
-  </div>
-
-  <!-- Members -->
-  <div class="bg-white rounded-lg border border-gray-200">
-    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-      <h2 class="text-base font-semibold text-gray-900">Members</h2>
-      <span class="text-xs text-gray-500">{{ members.length }} members</span>
-    </div>
-    <ul class="divide-y divide-gray-100">
-      @for (member of members; track member.email) {
-        <li class="px-6 py-4 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-semibold">
-              {{ member.avatar }}
-            </div>
-            <div>
-              <p class="text-sm font-medium text-gray-900">{{ member.name }}</p>
-              <p class="text-xs text-gray-500">{{ member.email }}</p>
-            </div>
-          </div>
-          <span class="px-2.5 py-0.5 text-xs font-medium rounded-full"
-            [class.bg-purple-50]="member.role === 'Admin'"
-            [class.text-purple-700]="member.role === 'Admin'"
-            [class.bg-blue-50]="member.role === 'Developer'"
-            [class.text-blue-700]="member.role === 'Developer'"
-            [class.bg-green-50]="member.role === 'Manager'"
-            [class.text-green-700]="member.role === 'Manager'"
-            [class.bg-orange-50]="member.role === 'Designer'"
-            [class.text-orange-700]="member.role === 'Designer'"
+  @if (authService.currentOrg(); as org) {
+    <!-- Tabs -->
+    <div class="border-b border-gray-200 mb-6">
+      <nav class="flex gap-6 -mb-px">
+        @for (tab of tabs; track tab.id) {
+          <button
+            class="pb-3 text-sm font-medium border-b-2 transition-colors cursor-pointer"
+            [class.border-indigo-600]="activeTab() === tab.id"
+            [class.text-indigo-600]="activeTab() === tab.id"
+            [class.border-transparent]="activeTab() !== tab.id"
+            [class.text-gray-500]="activeTab() !== tab.id"
+            [class.hover:text-gray-700]="activeTab() !== tab.id"
+            (click)="activeTab.set(tab.id)"
           >
-            {{ member.role }}
-          </span>
-        </li>
+            {{ tab.label }}
+          </button>
+        }
+      </nav>
+    </div>
+
+    <!-- Tab content -->
+    @switch (activeTab()) {
+      @case ('details') {
+        <app-org-details-tab [org]="org" (orgUpdated)="onOrgUpdated($event)" />
       }
-    </ul>
-  </div>
+      @case ('members') {
+        <app-members-tab [orgUid]="org.uid" />
+      }
+      @case ('invites') {
+        <app-invites-tab [orgUid]="org.uid" />
+      }
+      @case ('roles') {
+        <app-roles-tab [orgUid]="org.uid" />
+      }
+      @case ('models') {
+        <app-models-available-tab />
+      }
+    }
+  } @else {
+    <div class="text-center py-12">
+      <p class="text-gray-500 text-sm">No organization selected. Please select or create one.</p>
+    </div>
+  }
 </div>
