@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { OrgOut, OrgCreate, OrgUpdate } from '../../interfaces/org/org.interface';
+import { MessageResponse } from '../../../shared/interfaces/message-response.interface';
 
 @Injectable({ providedIn: 'root' })
 export class OrgApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8000/api/v1';
+  private readonly baseUrl: string = 'http://localhost:8000/api/v1';
 
   listOrgs(): Promise<OrgOut[]> {
     return firstValueFrom(this.http.get<OrgOut[]>(`${this.baseUrl}/orgs`));
@@ -24,7 +25,7 @@ export class OrgApiService {
     return firstValueFrom(this.http.put<OrgOut>(`${this.baseUrl}/orgs/${orgUid}`, data));
   }
 
-  updateOrgStatus(orgUid: string, status: string): Promise<OrgOut> {
+  updateOrgStatus(orgUid: string, status: OrgOut['status']): Promise<OrgOut> {
     return firstValueFrom(
       this.http.patch<OrgOut>(`${this.baseUrl}/orgs/${orgUid}/status`, { status })
     );
@@ -34,9 +35,9 @@ export class OrgApiService {
     return firstValueFrom(this.http.delete<void>(`${this.baseUrl}/orgs/${orgUid}`));
   }
 
-  transferOwnership(orgUid: string, newOwnerUid: string): Promise<{ message: string }> {
+  transferOwnership(orgUid: string, newOwnerUid: string): Promise<MessageResponse> {
     return firstValueFrom(
-      this.http.post<{ message: string }>(`${this.baseUrl}/orgs/${orgUid}/transfer`, {
+      this.http.post<MessageResponse>(`${this.baseUrl}/orgs/${orgUid}/transfer`, {
         new_owner_uid: newOwnerUid,
       })
     );

@@ -9,12 +9,8 @@ import {
 import { FormsModule } from '@angular/forms';
 import { BotApiService } from '../../services/bots/bot-api.service';
 import { JobResponse } from '../../interfaces/bots/bot.interface';
+import { IngestionActiveJob } from '../../interfaces/bots/ingestion.interface';
 import { IngestionJobComponent } from './ingestion-job.component';
-
-interface ActiveJob {
-  jobId: string;
-  label: string;
-}
 
 @Component({
   selector: 'app-url-tab',
@@ -29,13 +25,13 @@ export class UrlTabComponent {
 
   botUid = input.required<string>();
 
-  protected readonly urlInput = signal('');
-  protected readonly submitting = signal(false);
+  protected readonly urlInput = signal<string>('');
+  protected readonly submitting = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly activeJobs = signal<ActiveJob[]>([]);
+  protected readonly activeJobs = signal<IngestionActiveJob[]>([]);
 
   async onSubmit(): Promise<void> {
-    const url = this.urlInput().trim();
+    const url: string = this.urlInput().trim();
     if (!url) return;
 
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -47,9 +43,9 @@ export class UrlTabComponent {
     this.error.set(null);
 
     try {
-      const job = await this.api.ingestUrl(this.botUid(), url);
+      const job: JobResponse = await this.api.ingestUrl(this.botUid(), url);
       if (this.destroyRef.destroyed) return;
-      this.activeJobs.update((jobs) => [
+      this.activeJobs.update((jobs: IngestionActiveJob[]): IngestionActiveJob[] => [
         ...jobs,
         { jobId: job.job_id, label: url },
       ]);
@@ -62,13 +58,15 @@ export class UrlTabComponent {
     }
   }
 
-  onJobCompleted(_job: JobResponse, activeJob: ActiveJob): void {
-    this.activeJobs.update((jobs) =>
-      jobs.filter((j) => j.jobId !== activeJob.jobId)
+  onJobCompleted(_job: JobResponse, activeJob: IngestionActiveJob): void {
+    this.activeJobs.update((jobs: IngestionActiveJob[]): IngestionActiveJob[] =>
+      jobs.filter((j: IngestionActiveJob): boolean => j.jobId !== activeJob.jobId)
     );
   }
 
   onJobCancelled(jobId: string): void {
-    this.activeJobs.update((jobs) => jobs.filter((j) => j.jobId !== jobId));
+    this.activeJobs.update((jobs: IngestionActiveJob[]): IngestionActiveJob[] =>
+      jobs.filter((j: IngestionActiveJob): boolean => j.jobId !== jobId)
+    );
   }
 }

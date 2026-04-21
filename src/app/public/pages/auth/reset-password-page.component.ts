@@ -7,6 +7,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthApiService } from '../../../auth/services/auth/auth-api.service';
+import { ResetPasswordForm } from '../../../auth/interfaces/auth/user.interface';
 
 @Component({
   selector: 'app-reset-password-page',
@@ -60,10 +61,10 @@ import { AuthApiService } from '../../../auth/services/auth/auth-api.service';
 })
 export class ResetPasswordPageComponent {
   private readonly authApi = inject(AuthApiService);
-  protected readonly form = { token: '', password: '', confirm: '' };
-  protected readonly loading = signal(false);
+  protected readonly form: ResetPasswordForm = { token: '', password: '', confirm: '' };
+  protected readonly loading = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly success = signal(false);
+  protected readonly success = signal<boolean>(false);
 
   async onSubmit(): Promise<void> {
     if (this.form.password !== this.form.confirm) {

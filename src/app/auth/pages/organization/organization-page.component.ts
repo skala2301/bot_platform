@@ -6,18 +6,14 @@ import {
 } from '@angular/core';
 import { AuthService } from '../../services/auth/auth.service';
 import { OrgOut } from '../../interfaces/org/org.interface';
+import { Tab } from '../../../shared/interfaces/tab.interface';
 import { OrgDetailsTabComponent } from '../../components/org/org-details-tab.component';
 import { MembersTabComponent } from '../../components/org/members-tab.component';
 import { InvitesTabComponent } from '../../components/org/invites-tab.component';
 import { RolesTabComponent } from '../../components/org/roles-tab.component';
 import { ModelsAvailableTabComponent } from '../../components/org/models-available-tab.component';
 
-type TabId = 'details' | 'members' | 'invites' | 'roles' | 'models';
-
-interface Tab {
-  id: TabId;
-  label: string;
-}
+type OrgTabId = 'details' | 'members' | 'invites' | 'roles' | 'models';
 
 @Component({
   selector: 'app-organization-page',
@@ -34,9 +30,9 @@ interface Tab {
 })
 export class OrganizationPageComponent {
   protected readonly authService = inject(AuthService);
-  protected readonly activeTab = signal<TabId>('details');
+  protected readonly activeTab = signal<OrgTabId>('details');
 
-  protected readonly tabs: Tab[] = [
+  protected readonly tabs: ReadonlyArray<Tab<OrgTabId>> = [
     { id: 'details', label: 'Details' },
     { id: 'members', label: 'Members' },
     { id: 'invites', label: 'Invites' },

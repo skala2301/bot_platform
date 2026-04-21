@@ -6,6 +6,7 @@ import {
   input,
   output,
   effect,
+  EffectRef,
   DestroyRef,
 } from '@angular/core';
 import { ModelApiService } from '../../services/bots/model-api.service';
@@ -13,6 +14,11 @@ import {
   ModelInfo,
   ModelLocation,
 } from '../../interfaces/bots/model.interface';
+import { httpErrorStatus, httpErrorDetail } from '../../../shared/utils/http-error';
+
+function isModelLocation(value: string): value is ModelLocation {
+  return value === 'local' || value === 'cloud';
+}
 
 @Component({
   selector: 'app-bot-model-selector',
@@ -26,17 +32,17 @@ export class BotModelSelectorComponent {
 
   modelLocation = input<ModelLocation | null>(null);
   modelName = input<string | null>(null);
-  disabled = input(false);
+  disabled = input<boolean>(false);
 
   modelLocationChange = output<ModelLocation | null>();
   modelNameChange = output<string | null>();
 
   protected readonly models = signal<ModelInfo[]>([]);
-  protected readonly loading = signal(false);
+  protected readonly loading = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
 
-  private readonly loadModelsEffect = effect(() => {
-    const location = this.modelLocation();
+  private readonly loadModelsEffect: EffectRef = effect((): void => {
+    const location: ModelLocation | null = this.modelLocation();
     if (location) {
       this.loadModels(location);
     } else {
@@ -48,26 +54,25 @@ export class BotModelSelectorComponent {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const data = await this.modelApi.listModels(location, 'chat');
+      const data: ModelInfo[] = await this.modelApi.listModels(location, 'chat');
       if (this.destroyRef.destroyed) return;
       this.models.set(data);
 
-      // If the currently selected model isn't in the new list, clear it
-      const currentName = this.modelName();
-      if (currentName && !data.some((m) => m.name === currentName)) {
+      const currentName: string | null = this.modelName();
+      if (currentName !== null && !data.some((m: ModelInfo): boolean => m.name === currentName)) {
         this.modelNameChange.emit(null);
       }
     } catch (e: unknown) {
       if (this.destroyRef.destroyed) return;
       this.models.set([]);
-      const detail = (e as { error?: { detail?: string } })?.error?.detail;
-      const status = (e as { status?: number })?.status;
+      const status: number | null = httpErrorStatus(e);
+      const detail: string | null = httpErrorDetail(e);
       if (status === 400 && location === 'cloud') {
         this.error.set('Cloud models unavailable: OLLAMA_API_KEY is not configured on the backend.');
       } else if (status === 502) {
         this.error.set('Cannot reach Ollama. Please check the backend service.');
       } else {
-        this.error.set(detail || 'Failed to load models.');
+        this.error.set(detail ?? 'Failed to load models.');
       }
     } finally {
       this.loading.set(false);
@@ -75,12 +80,12 @@ export class BotModelSelectorComponent {
   }
 
   protected onLocationChange(value: string): void {
-    const location = (value || null) as ModelLocation | null;
+    const location: ModelLocation | null = isModelLocation(value) ? value : null;
     this.modelNameChange.emit(null);
     this.modelLocationChange.emit(location);
   }
 
   protected onModelChange(value: string): void {
-    this.modelNameChange.emit(value || null);
+    this.modelNameChange.emit(value.length > 0 ? value : null);
   }
 }

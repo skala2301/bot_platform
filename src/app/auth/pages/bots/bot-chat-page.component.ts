@@ -5,23 +5,22 @@ import {
   signal,
   computed,
   OnInit,
+  AfterViewChecked,
   DestroyRef,
   ElementRef,
   viewChild,
-  AfterViewChecked,
+  Signal,
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BotApiService } from '../../services/bots/bot-api.service';
 import { WidgetApiService } from '../../services/bots/widget-api.service';
-import { Bot, ChatSource } from '../../interfaces/bots/bot.interface';
-
-interface ChatMessage {
-  role: 'user' | 'bot';
-  content: string;
-  sources?: ChatSource[];
-  timestamp: Date;
-}
+import {
+  Bot,
+  ChatResponse,
+  Conversation,
+} from '../../interfaces/bots/bot.interface';
+import { ChatMessage } from '../../interfaces/bots/chat.interface';
 
 @Component({
   selector: 'app-bot-chat-page',
@@ -31,35 +30,38 @@ interface ChatMessage {
   templateUrl: './bot-chat-page.component.html',
   styleUrl: './bot-chat-page.component.css',
 })
-export class BotChatPageComponent implements OnInit {
+export class BotChatPageComponent implements OnInit, AfterViewChecked {
   private readonly api = inject(BotApiService);
   private readonly widgetApi = inject(WidgetApiService);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly messagesContainer = viewChild<ElementRef>('messagesContainer');
+  protected readonly messagesContainer: Signal<ElementRef<HTMLElement> | undefined> =
+    viewChild<ElementRef<HTMLElement>>('messagesContainer');
 
   protected readonly bot = signal<Bot | null>(null);
   protected readonly messages = signal<ChatMessage[]>([]);
-  protected readonly question = signal('');
-  protected readonly sending = signal(false);
-  protected readonly loading = signal(true);
+  protected readonly question = signal<string>('');
+  protected readonly sending = signal<boolean>(false);
+  protected readonly loading = signal<boolean>(true);
   protected readonly error = signal<string | null>(null);
   private readonly conversationUid = signal<string | null>(null);
 
-  protected readonly useWidgetMode = signal(false);
-  protected readonly widgetApiKey = signal('');
-  protected readonly showWidgetPanel = signal(false);
+  protected readonly useWidgetMode = signal<boolean>(false);
+  protected readonly widgetApiKey = signal<string>('');
+  protected readonly showWidgetPanel = signal<boolean>(false);
 
-  protected readonly botName = computed(() => this.bot()?.name ?? 'Bot');
-  protected openSources = signal<Set<string>>(new Set());
-  protected openReferences = signal<Set<string>>(new Set());
+  protected readonly botName: Signal<string> = computed(
+    (): string => this.bot()?.name ?? 'Bot'
+  );
+  protected openSources = signal<Set<string>>(new Set<string>());
+  protected openReferences = signal<Set<string>>(new Set<string>());
 
-  private shouldScroll = false;
+  private shouldScroll: boolean = false;
 
   ngOnInit(): void {
-    const uid = this.route.snapshot.paramMap.get('botUid');
-    if (uid) {
+    const uid: string | null = this.route.snapshot.paramMap.get('botUid');
+    if (uid !== null) {
       this.loadBot(uid);
     }
   }
@@ -73,11 +75,11 @@ export class BotChatPageComponent implements OnInit {
 
   private async loadBot(uid: string): Promise<void> {
     try {
-      const bot = await this.api.getBot(uid);
+      const bot: Bot = await this.api.getBot(uid);
       if (this.destroyRef.destroyed) return;
       this.bot.set(bot);
 
-      const conversation = await this.api.createConversation(uid);
+      const conversation: Conversation = await this.api.createConversation(uid);
       if (this.destroyRef.destroyed) return;
       this.conversationUid.set(conversation.uid);
     } catch {
@@ -89,28 +91,28 @@ export class BotChatPageComponent implements OnInit {
   }
 
   async onSend(): Promise<void> {
-    const q = this.question().trim();
-    if (!q || this.sending()) return;
+    const q: string = this.question().trim();
+    if (q.length === 0 || this.sending()) return;
 
-    const isWidget = this.useWidgetMode() && this.widgetApiKey().trim();
-    const convUid = this.conversationUid();
-    if (!isWidget && !convUid) return;
+    const isWidget: boolean = this.useWidgetMode() && this.widgetApiKey().trim().length > 0;
+    const convUid: string | null = this.conversationUid();
+    if (!isWidget && convUid === null) return;
 
     this.question.set('');
     this.sending.set(true);
 
-    this.messages.update((msgs) => [
+    this.messages.update((msgs: ChatMessage[]): ChatMessage[] => [
       ...msgs,
       { role: 'user', content: q, timestamp: new Date() },
     ]);
     this.shouldScroll = true;
 
     try {
-      const res = isWidget
+      const res: ChatResponse = isWidget
         ? await this.widgetApi.chat(this.widgetApiKey().trim(), q)
         : await this.api.sendMessage(convUid!, q);
       if (this.destroyRef.destroyed) return;
-      this.messages.update((msgs) => [
+      this.messages.update((msgs: ChatMessage[]): ChatMessage[] => [
         ...msgs,
         {
           role: 'bot',
@@ -122,7 +124,7 @@ export class BotChatPageComponent implements OnInit {
       this.shouldScroll = true;
     } catch {
       if (this.destroyRef.destroyed) return;
-      this.messages.update((msgs) => [
+      this.messages.update((msgs: ChatMessage[]): ChatMessage[] => [
         ...msgs,
         {
           role: 'bot',
@@ -136,28 +138,36 @@ export class BotChatPageComponent implements OnInit {
     }
   }
 
-  toggleReferences(index: string) {
-    this.openReferences.update(set => {
-      const next = new Set(set);
-      next.has(index) ? next.delete(index) : next.add(index);
+  toggleReferences(index: string): void {
+    this.openReferences.update((set: Set<string>): Set<string> => {
+      const next: Set<string> = new Set<string>(set);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
       return next;
     });
   }
 
-  toggleSource(index: string) {
-    this.openSources.update(set => {
-      const next = new Set(set);
-      next.has(index) ? next.delete(index) : next.add(index);
+  toggleSource(index: string): void {
+    this.openSources.update((set: Set<string>): Set<string> => {
+      const next: Set<string> = new Set<string>(set);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
       return next;
     });
   }
 
-  sourceKey(msgIndex: number, sourceIndex: number | null = null) {
+  sourceKey(msgIndex: number, sourceIndex: number | null = null): string {
     return `${msgIndex}-${sourceIndex}`;
   }
 
   private scrollToBottom(): void {
-    const el = this.messagesContainer()?.nativeElement;
+    const el: HTMLElement | undefined = this.messagesContainer()?.nativeElement;
     if (el) {
       el.scrollTop = el.scrollHeight;
     }

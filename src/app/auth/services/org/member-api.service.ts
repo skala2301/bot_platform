@@ -6,7 +6,7 @@ import { MemberOut } from '../../interfaces/org/member.interface';
 @Injectable({ providedIn: 'root' })
 export class MemberApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8000/api/v1';
+  private readonly baseUrl: string = 'http://localhost:8000/api/v1';
 
   listMembers(orgUid: string): Promise<MemberOut[]> {
     return firstValueFrom(

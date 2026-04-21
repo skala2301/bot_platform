@@ -5,7 +5,9 @@ import {
   signal,
   computed,
   effect,
+  EffectRef,
   DestroyRef,
+  Signal,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { BotApiService } from '../../services/bots/bot-api.service';
@@ -28,25 +30,24 @@ export class BotListPageComponent {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly bots = signal<Bot[]>([]);
-  protected readonly botsLoading = signal(false);
+  protected readonly botsLoading = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
   protected readonly botToDelete = signal<Bot | null>(null);
 
-  // UI states derived from the AuthService
-  protected readonly orgsLoaded = this.authService.orgsLoaded;
-  protected readonly currentOrgUid = this.authService.currentOrgUid;
-  protected readonly hasNoOrg = computed(
-    () => this.authService.orgsLoaded() && this.authService.orgs().length === 0
-  );
-  // Show spinner while: orgs are still being fetched, OR we have an org and bots are loading
-  protected readonly loading = computed(
-    () => (!this.orgsLoaded() && !this.currentOrgUid()) || this.botsLoading()
+  protected readonly orgsLoaded: Signal<boolean> = this.authService.orgsLoaded;
+  protected readonly currentOrgUid: Signal<string | null> = this.authService.currentOrgUid;
+
+  protected readonly hasNoOrg: Signal<boolean> = computed(
+    (): boolean => this.authService.orgsLoaded() && this.authService.orgs().length === 0
   );
 
-  // Reactively reload bots whenever the current org changes.
-  private readonly orgEffect = effect(() => {
-    const orgUid = this.currentOrgUid();
-    if (orgUid) {
+  protected readonly loading: Signal<boolean> = computed(
+    (): boolean => (!this.orgsLoaded() && !this.currentOrgUid()) || this.botsLoading()
+  );
+
+  private readonly orgEffect: EffectRef = effect((): void => {
+    const orgUid: string | null = this.currentOrgUid();
+    if (orgUid !== null) {
       this.loadBots(orgUid);
     } else {
       this.bots.set([]);
@@ -58,7 +59,7 @@ export class BotListPageComponent {
     this.botsLoading.set(true);
     this.error.set(null);
     try {
-      const data = await this.api.listBots(orgUid);
+      const data: Bot[] = await this.api.listBots(orgUid);
       if (this.destroyRef.destroyed) return;
       this.bots.set(data);
     } catch {
@@ -82,13 +83,15 @@ export class BotListPageComponent {
   }
 
   async onDeleteConfirm(): Promise<void> {
-    const bot = this.botToDelete();
+    const bot: Bot | null = this.botToDelete();
     if (!bot) return;
     this.botToDelete.set(null);
     try {
       await this.api.deleteBot(bot.uid);
       if (this.destroyRef.destroyed) return;
-      this.bots.update((list) => list.filter((b) => b.uid !== bot.uid));
+      this.bots.update((list: Bot[]): Bot[] =>
+        list.filter((b: Bot): boolean => b.uid !== bot.uid)
+      );
     } catch {
       if (this.destroyRef.destroyed) return;
       this.error.set('Failed to delete bot.');

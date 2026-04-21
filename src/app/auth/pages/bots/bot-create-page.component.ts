@@ -9,9 +9,15 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BotApiService } from '../../services/bots/bot-api.service';
 import { AuthService } from '../../services/auth/auth.service';
-import { BotCreate } from '../../interfaces/bots/bot.interface';
+import {
+  Bot,
+  BotCreate,
+  BotFormData,
+  LanguageOption,
+} from '../../interfaces/bots/bot.interface';
 import { ModelLocation } from '../../interfaces/bots/model.interface';
 import { BotModelSelectorComponent } from '../../components/bots/bot-model-selector.component';
+import { httpErrorDetail } from '../../../shared/utils/http-error';
 
 @Component({
   selector: 'app-bot-create-page',
@@ -26,21 +32,21 @@ export class BotCreatePageComponent {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly saving = signal(false);
+  protected readonly saving = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
 
   protected readonly modelLocation = signal<ModelLocation | null>(null);
   protected readonly modelName = signal<string | null>(null);
 
-  protected readonly form = {
+  protected readonly form: BotFormData = {
     name: '',
-    language_code: null as string | null,
-    system_prompt: null as string | null,
-    tone: null as string | null,
-    fallback_message: null as string | null,
+    language_code: null,
+    system_prompt: null,
+    tone: null,
+    fallback_message: null,
   };
 
-  protected readonly languages = [
+  protected readonly languages: ReadonlyArray<LanguageOption> = [
     { code: '', label: 'None' },
     { code: 'en', label: 'English' },
     { code: 'es', label: 'Spanish' },
@@ -51,9 +57,9 @@ export class BotCreatePageComponent {
 
   protected canSubmit(): boolean {
     return (
-      !!this.form.name.trim() &&
-      !!this.modelLocation() &&
-      !!this.modelName() &&
+      this.form.name.trim().length > 0 &&
+      this.modelLocation() !== null &&
+      this.modelName() !== null &&
       !this.saving()
     );
   }
@@ -61,8 +67,8 @@ export class BotCreatePageComponent {
   async onSubmit(): Promise<void> {
     if (!this.canSubmit()) return;
 
-    const location = this.modelLocation();
-    const name = this.modelName();
+    const location: ModelLocation | null = this.modelLocation();
+    const name: string | null = this.modelName();
     if (!location || !name) {
       this.error.set('Please select a model type and model name.');
       return;
@@ -81,7 +87,7 @@ export class BotCreatePageComponent {
       fallback_message: this.form.fallback_message?.trim() || null,
     };
 
-    const orgUid = this.authService.currentOrgUid();
+    const orgUid: string | null = this.authService.currentOrgUid();
     if (!orgUid) {
       this.error.set('No organization selected.');
       this.saving.set(false);
@@ -89,13 +95,13 @@ export class BotCreatePageComponent {
     }
 
     try {
-      const bot = await this.api.createBot(orgUid, payload);
+      const bot: Bot = await this.api.createBot(orgUid, payload);
       if (this.destroyRef.destroyed) return;
       this.router.navigate(['/bots', bot.uid, 'edit']);
     } catch (e: unknown) {
       if (this.destroyRef.destroyed) return;
-      const detail = (e as { error?: { detail?: string } })?.error?.detail;
-      this.error.set(typeof detail === 'string' ? detail : 'Failed to create bot.');
+      const detail: string | null = httpErrorDetail(e);
+      this.error.set(detail ?? 'Failed to create bot.');
       this.saving.set(false);
     }
   }

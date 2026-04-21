@@ -9,13 +9,9 @@ import {
 } from '@angular/core';
 import { BotApiService } from '../../services/bots/bot-api.service';
 import { BotDocument, JobResponse } from '../../interfaces/bots/bot.interface';
+import { IngestionActiveJob } from '../../interfaces/bots/ingestion.interface';
 import { IngestionJobComponent } from './ingestion-job.component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog.component';
-
-interface ActiveJob {
-  jobId: string;
-  label: string;
-}
 
 @Component({
   selector: 'app-document-tab',
@@ -31,7 +27,7 @@ export class DocumentTabComponent implements OnInit {
   botUid = input.required<string>();
 
   protected readonly documents = signal<BotDocument[]>([]);
-  protected readonly activeJobs = signal<ActiveJob[]>([]);
+  protected readonly activeJobs = signal<IngestionActiveJob[]>([]);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly docToDelete = signal<BotDocument | null>(null);
@@ -43,10 +39,11 @@ export class DocumentTabComponent implements OnInit {
   private async loadDocuments(): Promise<void> {
     this.loading.set(true);
     try {
-      const docs = await this.api.listDocuments(this.botUid());
+      const docs: BotDocument[] = await this.api.listDocuments(this.botUid());
       if (this.destroyRef.destroyed) return;
-      const files = docs.filter(d=>d.source_type == "file")
-      console.log(files)
+      const files: BotDocument[] = docs.filter(
+        (d: BotDocument): boolean => d.source_type === 'file'
+      );
       this.documents.set(files);
     } catch {
       if (this.destroyRef.destroyed) return;
@@ -57,18 +54,18 @@ export class DocumentTabComponent implements OnInit {
   }
 
   async onFileSelected(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    const files = input.files;
+    const inputEl = event.target as HTMLInputElement;
+    const files: FileList | null = inputEl.files;
     if (!files?.length) return;
 
     this.error.set(null);
 
     for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+      const file: File = files[i];
       try {
-        const job = await this.api.ingestFile(this.botUid(), file);
+        const job: JobResponse = await this.api.ingestFile(this.botUid(), file);
         if (this.destroyRef.destroyed) return;
-        this.activeJobs.update((jobs) => [
+        this.activeJobs.update((jobs: IngestionActiveJob[]): IngestionActiveJob[] => [
           ...jobs,
           { jobId: job.job_id, label: file.name },
         ]);
@@ -78,35 +75,39 @@ export class DocumentTabComponent implements OnInit {
       }
     }
 
-    input.value = '';
+    inputEl.value = '';
   }
 
-  onJobCompleted(job: JobResponse, activeJob: ActiveJob): void {
-    this.activeJobs.update((jobs) =>
-      jobs.filter((j) => j.jobId !== activeJob.jobId)
+  onJobCompleted(_job: JobResponse, activeJob: IngestionActiveJob): void {
+    this.activeJobs.update((jobs: IngestionActiveJob[]): IngestionActiveJob[] =>
+      jobs.filter((j: IngestionActiveJob): boolean => j.jobId !== activeJob.jobId)
     );
     this.loadDocuments();
   }
 
   onJobCancelled(jobId: string): void {
-    this.activeJobs.update((jobs) => jobs.filter((j) => j.jobId !== jobId));
+    this.activeJobs.update((jobs: IngestionActiveJob[]): IngestionActiveJob[] =>
+      jobs.filter((j: IngestionActiveJob): boolean => j.jobId !== jobId)
+    );
   }
 
   async onDeleteConfirm(): Promise<void> {
-    const doc = this.docToDelete();
+    const doc: BotDocument | null = this.docToDelete();
     if (!doc) return;
     this.docToDelete.set(null);
     try {
       await this.api.deleteDocument(this.botUid(), doc.uid);
       if (this.destroyRef.destroyed) return;
-      this.documents.update((list) => list.filter((d) => d.uid !== doc.uid));
+      this.documents.update((list: BotDocument[]): BotDocument[] =>
+        list.filter((d: BotDocument): boolean => d.uid !== doc.uid)
+      );
     } catch {
       if (this.destroyRef.destroyed) return;
       this.error.set('Failed to delete document.');
     }
   }
 
-  sourceIcon(type: string): string {
+  sourceIcon(type: BotDocument['source_type']): string {
     switch (type) {
       case 'file': return '&#x1F4C4;';
       case 'faq': return '&#x2753;';

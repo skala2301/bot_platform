@@ -8,6 +8,9 @@ import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthApiService } from '../../../auth/services/auth/auth-api.service';
 import { AuthService } from '../../../auth/services/auth/auth.service';
+import { TokenResponse } from '../../../auth/interfaces/auth/token.interface';
+import { UserOut } from '../../../auth/interfaces/auth/user.interface';
+import { httpErrorStatus } from '../../../shared/utils/http-error';
 
 @Component({
   selector: 'app-login-page',
@@ -22,30 +25,33 @@ export class LoginPageComponent {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
-  protected readonly email = signal('');
-  protected readonly password = signal('');
-  protected readonly loading = signal(false);
+  protected readonly email = signal<string>('');
+  protected readonly password = signal<string>('');
+  protected readonly loading = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
 
   async onSubmit(): Promise<void> {
-    if (!this.email().trim() || !this.password()) return;
+    if (this.email().trim().length === 0 || this.password().length === 0) return;
 
     this.loading.set(true);
     this.error.set(null);
 
     try {
-      const tokens = await this.authApi.login(this.email().trim(), this.password());
+      const tokens: TokenResponse = await this.authApi.login(
+        this.email().trim(),
+        this.password()
+      );
       // Store tokens FIRST so the interceptor can attach the Bearer header to /auth/me
       this.authService.updateTokens(tokens);
-      const user = await this.authApi.getMe();
+      const user: UserOut = await this.authApi.getMe();
       this.authService.setSession(tokens, user);
 
-      const redirect = this.route.snapshot.queryParamMap.get('redirect');
-      this.router.navigateByUrl(redirect || '/bots');
+      const redirect: string | null = this.route.snapshot.queryParamMap.get('redirect');
+      this.router.navigateByUrl(redirect ?? '/bots');
     } catch (e: unknown) {
       // Clear any partial session state (e.g. tokens set before /auth/me failed)
       this.authService.clearSession();
-      const status = (e as { status?: number })?.status;
+      const status: number | null = httpErrorStatus(e);
       if (status === 401) {
         this.error.set('Invalid email or password.');
       } else if (status === 403) {

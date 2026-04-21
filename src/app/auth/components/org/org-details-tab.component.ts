@@ -12,7 +12,11 @@ import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OrgApiService } from '../../services/org/org-api.service';
-import { OrgOut } from '../../interfaces/org/org.interface';
+import {
+  OrgOut,
+  OrgStatus,
+  OrgDetailsForm,
+} from '../../interfaces/org/org.interface';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog.component';
 
 @Component({
@@ -30,14 +34,14 @@ export class OrgDetailsTabComponent implements OnInit {
   org = input.required<OrgOut>();
   orgUpdated = output<OrgOut>();
 
-  protected readonly form = { name: '', label: '' };
-  protected readonly saving = signal(false);
+  protected readonly form: OrgDetailsForm = { name: '', label: '' };
+  protected readonly saving = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
   protected readonly success = signal<string | null>(null);
-  protected readonly showDeleteConfirm = signal(false);
+  protected readonly showDeleteConfirm = signal<boolean>(false);
 
   ngOnInit(): void {
-    const o = this.org();
+    const o: OrgOut = this.org();
     this.form.name = o.name;
     this.form.label = o.label ?? '';
   }
@@ -47,7 +51,7 @@ export class OrgDetailsTabComponent implements OnInit {
     this.error.set(null);
     this.success.set(null);
     try {
-      const updated = await this.orgApi.updateOrg(this.org().uid, {
+      const updated: OrgOut = await this.orgApi.updateOrg(this.org().uid, {
         name: this.form.name.trim(),
         label: this.form.label.trim() || undefined,
       });
@@ -62,10 +66,10 @@ export class OrgDetailsTabComponent implements OnInit {
     }
   }
 
-  async onStatusChange(status: string): Promise<void> {
+  async onStatusChange(status: OrgStatus): Promise<void> {
     this.error.set(null);
     try {
-      const updated = await this.orgApi.updateOrgStatus(this.org().uid, status);
+      const updated: OrgOut = await this.orgApi.updateOrgStatus(this.org().uid, status);
       if (this.destroyRef.destroyed) return;
       this.orgUpdated.emit(updated);
     } catch {

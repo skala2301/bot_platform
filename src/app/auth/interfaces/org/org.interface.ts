@@ -9,6 +9,9 @@ export interface OrgOut {
   updated_at: string;
 }
 
+export type OrgStatus = OrgOut['status'];
+export type OrgPlan = OrgOut['plan'];
+
 export interface OrgCreate {
   name: string;
   label?: string;
@@ -17,4 +20,10 @@ export interface OrgCreate {
 export interface OrgUpdate {
   name?: string;
   label?: string;
+}
+
+/** UI draft shape used by the Organization Details form. */
+export interface OrgDetailsForm {
+  name: string;
+  label: string;
 }

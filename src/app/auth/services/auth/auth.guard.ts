@@ -1,10 +1,19 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, Router } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  CanActivateFn,
+  Router,
+  RouterStateSnapshot,
+  UrlTree,
+} from '@angular/router';
 import { AuthService } from './auth.service';
 
-export const authGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+export const authGuard: CanActivateFn = (
+  _route: ActivatedRouteSnapshot,
+  state: RouterStateSnapshot
+): boolean | UrlTree => {
+  const authService: AuthService = inject(AuthService);
+  const router: Router = inject(Router);
 
   if (authService.isAuthenticated()) {
     return true;
@@ -15,9 +24,9 @@ export const authGuard: CanActivateFn = (route, state) => {
   });
 };
 
-export const publicGuard: CanActivateFn = () => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+export const publicGuard: CanActivateFn = (): boolean | UrlTree => {
+  const authService: AuthService = inject(AuthService);
+  const router: Router = inject(Router);
 
   if (authService.isAuthenticated()) {
     return router.createUrlTree(['/bots']);

@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy,
   inject,
   signal,
+  Signal,
 } from '@angular/core';
 import { UpperCasePipe } from '@angular/common';
 import { Router } from '@angular/router';
@@ -20,9 +21,9 @@ export class OrgSwitcherComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  protected readonly orgs = this.authService.orgs;
-  protected readonly currentOrg = this.authService.currentOrg;
-  protected readonly open = signal(false);
+  protected readonly orgs: Signal<OrgOut[]> = this.authService.orgs;
+  protected readonly currentOrg: Signal<OrgOut | null> = this.authService.currentOrg;
+  protected readonly open = signal<boolean>(false);
 
   selectOrg(org: OrgOut): void {
     this.authService.setCurrentOrg(org);
@@ -36,6 +37,6 @@ export class OrgSwitcherComponent {
   }
 
   toggle(): void {
-    this.open.update((v) => !v);
+    this.open.update((v: boolean): boolean => !v);
   }
 }

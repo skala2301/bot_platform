@@ -4,6 +4,7 @@ import {
   signal,
   input,
   computed,
+  Signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Bot } from '../../interfaces/bots/bot.interface';
@@ -21,14 +22,14 @@ import { CodeSnippetTabsComponent } from './code-snippet-tabs.component';
 export class DeployTabComponent {
   bot = input.required<Bot>();
 
-  protected readonly selectedApiKey = signal('');
-  protected readonly copied = signal(false);
+  protected readonly selectedApiKey = signal<string>('');
+  protected readonly copied = signal<boolean>(false);
 
-  protected readonly chatUrl = computed(() => {
-    const b = this.bot();
-    const base = `${window.location.origin}/chat/${b.uid}`;
-    const key = this.selectedApiKey();
-    return key ? `${base}?api_key=${key}` : base;
+  protected readonly chatUrl: Signal<string> = computed((): string => {
+    const b: Bot = this.bot();
+    const base: string = `${window.location.origin}/chat/${b.uid}`;
+    const key: string = this.selectedApiKey();
+    return key.length > 0 ? `${base}?api_key=${key}` : base;
   });
 
   onKeyCreated(event: ApiKeyCreated): void {
@@ -38,6 +39,6 @@ export class DeployTabComponent {
   copyUrl(): void {
     navigator.clipboard.writeText(this.chatUrl());
     this.copied.set(true);
-    setTimeout(() => this.copied.set(false), 2000);
+    setTimeout((): void => this.copied.set(false), 2000);
   }
 }

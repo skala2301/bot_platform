@@ -26,11 +26,11 @@ export class MembersTabComponent implements OnInit {
   orgUid = input.required<string>();
 
   protected readonly members = signal<MemberOut[]>([]);
-  protected readonly loading = signal(true);
+  protected readonly loading = signal<boolean>(true);
   protected readonly error = signal<string | null>(null);
   protected readonly memberToRemove = signal<MemberOut | null>(null);
   protected readonly editingMember = signal<MemberOut | null>(null);
-  protected readonly editRoles = signal('');
+  protected readonly editRoles = signal<string>('');
 
   ngOnInit(): void {
     this.loadMembers();
@@ -39,7 +39,7 @@ export class MembersTabComponent implements OnInit {
   private async loadMembers(): Promise<void> {
     this.loading.set(true);
     try {
-      const data = await this.memberApi.listMembers(this.orgUid());
+      const data: MemberOut[] = await this.memberApi.listMembers(this.orgUid());
       if (this.destroyRef.destroyed) return;
       this.members.set(data);
     } catch {
@@ -56,13 +56,13 @@ export class MembersTabComponent implements OnInit {
   }
 
   async saveRoles(): Promise<void> {
-    const member = this.editingMember();
+    const member: MemberOut | null = this.editingMember();
     if (!member) return;
 
-    const roles = this.editRoles()
+    const roles: string[] = this.editRoles()
       .split(',')
-      .map((r) => r.trim())
-      .filter(Boolean);
+      .map((r: string): string => r.trim())
+      .filter((r: string): boolean => r.length > 0);
 
     this.error.set(null);
     try {
@@ -77,7 +77,7 @@ export class MembersTabComponent implements OnInit {
   }
 
   async onRemoveConfirm(): Promise<void> {
-    const member = this.memberToRemove();
+    const member: MemberOut | null = this.memberToRemove();
     if (!member) return;
     this.memberToRemove.set(null);
     this.error.set(null);
@@ -92,8 +92,8 @@ export class MembersTabComponent implements OnInit {
   }
 
   memberInitials(m: MemberOut): string {
-    const f = m.first_name?.[0] ?? '';
-    const l = m.last_name?.[0] ?? '';
+    const f: string = m.first_name?.[0] ?? '';
+    const l: string = m.last_name?.[0] ?? '';
     return (f + l).toUpperCase() || m.email[0].toUpperCase();
   }
 

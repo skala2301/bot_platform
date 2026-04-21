@@ -9,6 +9,7 @@ import { Router, RouterOutlet } from '@angular/router';
 import { SidebarLayoutComponent } from '../shared/components/sidebar-layout.component';
 import { AuthService } from './services/auth/auth.service';
 import { OrgApiService } from './services/org/org-api.service';
+import { OrgOut } from './interfaces/org/org.interface';
 
 @Component({
   selector: 'app-auth-shell',
@@ -33,19 +34,19 @@ export class AuthShellComponent implements OnInit {
 
   private async loadOrgs(): Promise<void> {
     try {
-      const orgs = await this.orgApi.listOrgs();
+      const orgs: OrgOut[] = await this.orgApi.listOrgs();
       if (this.destroyRef.destroyed) return;
       this.authService.setOrgs(orgs);
 
       // If the persisted currentOrg is no longer in the user's list, clear it
-      const current = this.authService.currentOrg();
-      if (current && !orgs.some((o) => o.uid === current.uid)) {
+      const current: OrgOut | null = this.authService.currentOrg();
+      if (current && !orgs.some((o: OrgOut): boolean => o.uid === current.uid)) {
         if (orgs.length > 0) {
           this.authService.setCurrentOrg(orgs[0]);
         } else {
           this.authService.clearCurrentOrg();
         }
-      } else if (!current && orgs.length > 0) {
+      } else if (current === null && orgs.length > 0) {
         this.authService.setCurrentOrg(orgs[0]);
       }
 

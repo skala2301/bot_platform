@@ -8,17 +8,7 @@ import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../auth/services/auth/auth.service';
 import { AuthApiService } from '../../auth/services/auth/auth-api.service';
 import { OrgSwitcherComponent } from '../../auth/components/org/org-switcher.component';
-
-interface NavSection {
-  title: string;
-  items: NavItem[];
-}
-
-interface NavItem {
-  label: string;
-  route: string;
-  svgPath: string;
-}
+import { NavSection } from '../interfaces/nav.interface';
 
 @Component({
   selector: 'app-sidebar-layout',
@@ -33,9 +23,9 @@ export class SidebarLayoutComponent {
   private readonly authApiService = inject(AuthApiService);
   protected readonly authService = inject(AuthService);
 
-  protected readonly sidebarOpen = signal(false);
+  protected readonly sidebarOpen = signal<boolean>(false);
 
-  protected readonly navSections: NavSection[] = [
+  protected readonly navSections: ReadonlyArray<NavSection> = [
     {
       title: 'Main',
       items: [
@@ -69,9 +59,13 @@ export class SidebarLayoutComponent {
   ];
 
   async onLogout(): Promise<void> {
-    const refreshToken = this.authService.getRefreshToken();
-    if (refreshToken) {
-      try { await this.authApiService.logout(refreshToken); } catch { /* ignore */ }
+    const refreshToken: string | null = this.authService.getRefreshToken();
+    if (refreshToken !== null) {
+      try {
+        await this.authApiService.logout(refreshToken);
+      } catch {
+        // Best-effort: ignore logout errors so we always clear local state.
+      }
     }
     this.authService.clearSession();
     this.router.navigate(['/login']);

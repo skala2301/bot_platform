@@ -11,6 +11,8 @@ import {
 import { BotApiService } from '../../services/bots/bot-api.service';
 import { JobResponse } from '../../interfaces/bots/bot.interface';
 
+type JobStatus = JobResponse['status'];
+
 @Component({
   selector: 'app-ingestion-job',
   standalone: true,
@@ -22,31 +24,33 @@ export class IngestionJobComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   jobId = input.required<string>();
-  label = input('Processing...');
+  label = input<string>('Processing...');
 
   completed = output<JobResponse>();
   cancelled = output<string>();
 
-  protected readonly status = signal<string>('pending');
-  protected readonly detail = signal('');
-  protected readonly progress = signal(0);
-  protected readonly estimatedTime = signal('Calculating...');
-  protected readonly isCancelled = signal(false);
+  protected readonly status = signal<JobStatus>('pending');
+  protected readonly detail = signal<string>('');
+  protected readonly progress = signal<number>(0);
+  protected readonly estimatedTime = signal<string>('Calculating...');
+  protected readonly isCancelled = signal<boolean>(false);
 
   private pollTimer: ReturnType<typeof setInterval> | undefined;
-  private startTime = 0;
+  private startTime: number = 0;
 
   ngOnInit(): void {
     this.startTime = Date.now();
     this.startPolling();
 
-    this.destroyRef.onDestroy(() => {
+    this.destroyRef.onDestroy((): void => {
       this.stopPolling();
     });
   }
 
   private startPolling(): void {
-    this.pollTimer = setInterval(() => this.poll(), 2500);
+    this.pollTimer = setInterval((): void => {
+      this.poll();
+    }, 2500);
   }
 
   private stopPolling(): void {
@@ -60,7 +64,7 @@ export class IngestionJobComponent implements OnInit {
     if (this.isCancelled()) return;
 
     try {
-      const job = await this.api.getJobStatus(this.jobId());
+      const job: JobResponse = await this.api.getJobStatus(this.jobId());
       if (this.destroyRef.destroyed || this.isCancelled()) return;
 
       this.status.set(job.status);
@@ -78,16 +82,16 @@ export class IngestionJobComponent implements OnInit {
     }
   }
 
-  private updateProgress(status: string): void {
-    const elapsed = (Date.now() - this.startTime) / 1000;
+  private updateProgress(status: JobStatus): void {
+    const elapsed: number = (Date.now() - this.startTime) / 1000;
 
     if (status === 'pending') {
       this.progress.set(Math.min(20, elapsed * 2));
       this.estimatedTime.set('Waiting in queue...');
     } else if (status === 'processing') {
-      const p = Math.min(90, 20 + elapsed * 0.5);
+      const p: number = Math.min(90, 20 + elapsed * 0.5);
       this.progress.set(p);
-      const remaining = Math.max(1, Math.round((100 - p) / 0.5));
+      const remaining: number = Math.max(1, Math.round((100 - p) / 0.5));
       this.estimatedTime.set(`~${remaining}s remaining`);
     }
   }

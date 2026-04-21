@@ -4,10 +4,14 @@ import {
   signal,
   computed,
   input,
+  Signal,
 } from '@angular/core';
 
-interface SnippetTab {
-  id: string;
+export type FrontendTabId = 'iframe' | 'angular' | 'react' | 'vanilla';
+export type BackendTabId = 'curl' | 'nodejs' | 'python' | 'laravel';
+
+interface SnippetTab<T extends string> {
+  id: T;
   label: string;
 }
 
@@ -22,27 +26,27 @@ export class CodeSnippetTabsComponent {
   apiKey = input<string>('');
   baseApiUrl = input<string>('http://localhost:8000/api/v1');
 
-  protected readonly activeFrontend = signal('iframe');
-  protected readonly activeBackend = signal('curl');
+  protected readonly activeFrontend = signal<FrontendTabId>('iframe');
+  protected readonly activeBackend = signal<BackendTabId>('curl');
   protected readonly copiedSnippet = signal<string | null>(null);
 
-  protected readonly frontendTabs: SnippetTab[] = [
+  protected readonly frontendTabs: ReadonlyArray<SnippetTab<FrontendTabId>> = [
     { id: 'iframe', label: 'iframe' },
     { id: 'angular', label: 'Angular' },
     { id: 'react', label: 'React' },
     { id: 'vanilla', label: 'Vanilla JS' },
   ];
 
-  protected readonly backendTabs: SnippetTab[] = [
+  protected readonly backendTabs: ReadonlyArray<SnippetTab<BackendTabId>> = [
     { id: 'curl', label: 'curl' },
     { id: 'nodejs', label: 'Node.js / Express' },
     { id: 'python', label: 'Python / FastAPI' },
     { id: 'laravel', label: 'Laravel' },
   ];
 
-  private readonly key = computed(() => this.apiKey() || 'YOUR_API_KEY');
-  private readonly url = computed(() => this.chatUrl());
-  private readonly api = computed(() => this.baseApiUrl());
+  private readonly key: Signal<string> = computed((): string => this.apiKey() || 'YOUR_API_KEY');
+  private readonly url: Signal<string> = computed((): string => this.chatUrl());
+  private readonly api: Signal<string> = computed((): string => this.baseApiUrl());
 
   protected readonly iframeSnippet = computed(() =>
 `<iframe
@@ -251,6 +255,6 @@ Route::post('/chat', function (Request $request) {
   copySnippet(content: string, id: string): void {
     navigator.clipboard.writeText(content);
     this.copiedSnippet.set(id);
-    setTimeout(() => this.copiedSnippet.set(null), 2000);
+    setTimeout((): void => this.copiedSnippet.set(null), 2000);
   }
 }

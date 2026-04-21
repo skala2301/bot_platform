@@ -49,14 +49,18 @@ import { AuthApiService } from '../../../auth/services/auth/auth-api.service';
 })
 export class ForgotPasswordPageComponent {
   private readonly authApi = inject(AuthApiService);
-  protected readonly email = signal('');
-  protected readonly loading = signal(false);
-  protected readonly success = signal(false);
+  protected readonly email = signal<string>('');
+  protected readonly loading = signal<boolean>(false);
+  protected readonly success = signal<boolean>(false);
 
   async onSubmit(): Promise<void> {
-    if (!this.email().trim()) return;
+    if (this.email().trim().length === 0) return;
     this.loading.set(true);
-    try { await this.authApi.forgotPassword(this.email().trim()); } catch { /* always show success */ }
+    try {
+      await this.authApi.forgotPassword(this.email().trim());
+    } catch {
+      // Always show success to avoid email enumeration.
+    }
     this.success.set(true);
     this.loading.set(false);
   }

@@ -9,6 +9,7 @@ import {
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { BotApiService } from '../../services/bots/bot-api.service';
 import { Bot } from '../../interfaces/bots/bot.interface';
+import { Tab } from '../../../shared/interfaces/tab.interface';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog.component';
 import { BotSettingsTabComponent } from '../../components/bots/bot-settings-tab.component';
 import { DocumentTabComponent } from '../../components/bots/document-tab.component';
@@ -16,12 +17,7 @@ import { UrlTabComponent } from '../../components/bots/url-tab.component';
 import { FaqTabComponent } from '../../components/bots/faq-tab.component';
 import { DeployTabComponent } from '../../components/bots/deploy-tab.component';
 
-type TabId = 'settings' | 'documents' | 'urls' | 'faqs' | 'deploy';
-
-interface Tab {
-  id: TabId;
-  label: string;
-}
+type BotTabId = 'settings' | 'documents' | 'urls' | 'faqs' | 'deploy';
 
 @Component({
   selector: 'app-bot-edit-page',
@@ -45,12 +41,12 @@ export class BotEditPageComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly bot = signal<Bot | null>(null);
-  protected readonly loading = signal(true);
+  protected readonly loading = signal<boolean>(true);
   protected readonly error = signal<string | null>(null);
-  protected readonly activeTab = signal<TabId>('settings');
-  protected readonly showDeleteConfirm = signal(false);
+  protected readonly activeTab = signal<BotTabId>('settings');
+  protected readonly showDeleteConfirm = signal<boolean>(false);
 
-  protected readonly tabs: Tab[] = [
+  protected readonly tabs: ReadonlyArray<Tab<BotTabId>> = [
     { id: 'settings', label: 'Settings' },
     { id: 'documents', label: 'Documents' },
     { id: 'urls', label: 'URLs' },
@@ -59,8 +55,8 @@ export class BotEditPageComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    const uid = this.route.snapshot.paramMap.get('botUid');
-    if (uid) {
+    const uid: string | null = this.route.snapshot.paramMap.get('botUid');
+    if (uid !== null) {
       this.loadBot(uid);
     }
   }
@@ -68,7 +64,7 @@ export class BotEditPageComponent implements OnInit {
   private async loadBot(uid: string): Promise<void> {
     this.loading.set(true);
     try {
-      const data = await this.api.getBot(uid);
+      const data: Bot = await this.api.getBot(uid);
       if (this.destroyRef.destroyed) return;
       this.bot.set(data);
     } catch {
@@ -84,7 +80,7 @@ export class BotEditPageComponent implements OnInit {
   }
 
   async onDeleteConfirm(): Promise<void> {
-    const bot = this.bot();
+    const bot: Bot | null = this.bot();
     if (!bot) return;
     this.showDeleteConfirm.set(false);
     try {

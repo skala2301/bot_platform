@@ -12,7 +12,7 @@ import { Bot } from '../../interfaces/bots/bot.interface';
 @Injectable({ providedIn: 'root' })
 export class ModelApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8000/api/v1';
+  private readonly baseUrl: string = 'http://localhost:8000/api/v1';
 
   listModels(
     modelLocation: ModelLocation,

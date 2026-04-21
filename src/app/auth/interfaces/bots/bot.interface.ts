@@ -82,3 +82,30 @@ export interface Conversation {
   updated_at: string;
   messages: ConversationMessage[];
 }
+
+/* ─── Derived type aliases for narrowing ─────────────────────────────── */
+
+export type BotStatus = Bot['status'];
+export type BotSourceType = BotDocument['source_type'];
+export type JobStatus = JobResponse['status'];
+
+/* ─── UI draft shapes for forms ──────────────────────────────────────── */
+
+/**
+ * UI draft for bot create / bot settings forms. Matches the
+ * BotCreate/BotUpdate DTOs minus the model fields (which have their own
+ * selector component / signals) and with nullable strings for empty inputs.
+ */
+export interface BotFormData {
+  name: string;
+  language_code: string | null;
+  system_prompt: string | null;
+  tone: string | null;
+  fallback_message: string | null;
+}
+
+/** Option shape for the language `<select>` dropdown. */
+export interface LanguageOption {
+  code: string;
+  label: string;
+}

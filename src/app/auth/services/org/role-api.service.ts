@@ -6,7 +6,7 @@ import { RoleOut, RoleCreate, RoleUpdate } from '../../interfaces/org/role.inter
 @Injectable({ providedIn: 'root' })
 export class RoleApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8000/api/v1';
+  private readonly baseUrl: string = 'http://localhost:8000/api/v1';
 
   listRoles(orgUid: string): Promise<RoleOut[]> {
     return firstValueFrom(

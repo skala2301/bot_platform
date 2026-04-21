@@ -9,6 +9,10 @@ import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth/auth.service';
 import { OrgApiService } from '../../services/org/org-api.service';
+import {
+  OrgOut,
+  OrgDetailsForm,
+} from '../../interfaces/org/org.interface';
 
 @Component({
   selector: 'app-create-org-page',
@@ -60,8 +64,8 @@ export class CreateOrgPageComponent {
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly form = { name: '', label: '' };
-  protected readonly saving = signal(false);
+  protected readonly form: OrgDetailsForm = { name: '', label: '' };
+  protected readonly saving = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
 
   async onSubmit(): Promise<void> {
@@ -70,13 +74,13 @@ export class CreateOrgPageComponent {
     this.error.set(null);
 
     try {
-      const org = await this.orgApi.createOrg({
+      const org: OrgOut = await this.orgApi.createOrg({
         name: this.form.name.trim(),
         label: this.form.label.trim() || undefined,
       });
       if (this.destroyRef.destroyed) return;
 
-      const orgs = await this.orgApi.listOrgs();
+      const orgs: OrgOut[] = await this.orgApi.listOrgs();
       if (this.destroyRef.destroyed) return;
       this.authService.setOrgs(orgs);
       this.authService.setCurrentOrg(org);

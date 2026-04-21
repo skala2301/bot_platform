@@ -62,13 +62,13 @@ import { AuthApiService } from '../../../auth/services/auth/auth-api.service';
 export class VerifyEmailPageComponent {
   private readonly authApi = inject(AuthApiService);
 
-  protected readonly token = signal('');
-  protected readonly loading = signal(false);
+  protected readonly token = signal<string>('');
+  protected readonly loading = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly success = signal(false);
+  protected readonly success = signal<boolean>(false);
 
   async onSubmit(): Promise<void> {
-    if (!this.token().trim()) return;
+    if (this.token().trim().length === 0) return;
     this.loading.set(true);
     this.error.set(null);
 

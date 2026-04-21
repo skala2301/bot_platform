@@ -10,6 +10,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth/auth.service';
 import { OrgApiService } from '../../services/org/org-api.service';
 import { InviteApiService } from '../../services/org/invite-api.service';
+import { OrgOut } from '../../interfaces/org/org.interface';
+import { httpErrorDetail } from '../../../shared/utils/http-error';
 
 @Component({
   selector: 'app-accept-invite-page',
@@ -55,15 +57,15 @@ export class AcceptInvitePageComponent implements OnInit {
   private readonly inviteApi = inject(InviteApiService);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly loading = signal(true);
-  protected readonly success = signal(false);
+  protected readonly loading = signal<boolean>(true);
+  protected readonly success = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
 
   ngOnInit(): void {
-    const token = this.route.snapshot.queryParamMap.get('token');
-    const orgUid = this.route.snapshot.queryParamMap.get('org');
+    const token: string | null = this.route.snapshot.queryParamMap.get('token');
+    const orgUid: string | null = this.route.snapshot.queryParamMap.get('org');
 
-    if (!token || !orgUid) {
+    if (token === null || orgUid === null) {
       this.error.set('Missing invite token or organization.');
       this.loading.set(false);
       return;
@@ -77,18 +79,20 @@ export class AcceptInvitePageComponent implements OnInit {
       await this.inviteApi.acceptInvite(orgUid, token);
       if (this.destroyRef.destroyed) return;
 
-      const orgs = await this.orgApi.listOrgs();
+      const orgs: OrgOut[] = await this.orgApi.listOrgs();
       if (this.destroyRef.destroyed) return;
       this.authService.setOrgs(orgs);
 
-      const newOrg = orgs.find((o) => o.uid === orgUid);
+      const newOrg: OrgOut | undefined = orgs.find(
+        (o: OrgOut): boolean => o.uid === orgUid
+      );
       if (newOrg) this.authService.setCurrentOrg(newOrg);
 
       this.success.set(true);
     } catch (e: unknown) {
       if (this.destroyRef.destroyed) return;
-      const detail = (e as { error?: { detail?: string } })?.error?.detail;
-      this.error.set(detail || 'Failed to accept invite.');
+      const detail: string | null = httpErrorDetail(e);
+      this.error.set(detail ?? 'Failed to accept invite.');
     } finally {
       this.loading.set(false);
     }

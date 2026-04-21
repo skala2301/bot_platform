@@ -3,11 +3,12 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { UserOut, RegisterRequest } from '../../interfaces/auth/user.interface';
 import { TokenResponse } from '../../interfaces/auth/token.interface';
+import { MessageResponse } from '../../../shared/interfaces/message-response.interface';
 
 @Injectable({ providedIn: 'root' })
 export class AuthApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8000/api/v1';
+  private readonly baseUrl: string = 'http://localhost:8000/api/v1';
 
   register(data: RegisterRequest): Promise<UserOut> {
     return firstValueFrom(
@@ -15,9 +16,9 @@ export class AuthApiService {
     );
   }
 
-  verifyEmail(token: string): Promise<{ message: string }> {
+  verifyEmail(token: string): Promise<MessageResponse> {
     return firstValueFrom(
-      this.http.post<{ message: string }>(
+      this.http.post<MessageResponse>(
         `${this.baseUrl}/auth/verify-email`,
         { token }
       )
@@ -25,10 +26,10 @@ export class AuthApiService {
   }
 
   login(email: string, password: string): Promise<TokenResponse> {
-    const body = new HttpParams()
+    const body: HttpParams = new HttpParams()
       .set('username', email)
       .set('password', password);
-    const headers = new HttpHeaders({
+    const headers: HttpHeaders = new HttpHeaders({
       'Content-Type': 'application/x-www-form-urlencoded',
     });
     return firstValueFrom(
@@ -58,18 +59,18 @@ export class AuthApiService {
     );
   }
 
-  forgotPassword(email: string): Promise<{ message: string }> {
+  forgotPassword(email: string): Promise<MessageResponse> {
     return firstValueFrom(
-      this.http.post<{ message: string }>(
+      this.http.post<MessageResponse>(
         `${this.baseUrl}/auth/forgot-password`,
         { email }
       )
     );
   }
 
-  resetPassword(token: string, newPassword: string): Promise<{ message: string }> {
+  resetPassword(token: string, newPassword: string): Promise<MessageResponse> {
     return firstValueFrom(
-      this.http.post<{ message: string }>(
+      this.http.post<MessageResponse>(
         `${this.baseUrl}/auth/reset-password`,
         { token, new_password: newPassword }
       )

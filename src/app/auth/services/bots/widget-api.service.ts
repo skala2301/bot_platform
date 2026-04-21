@@ -7,7 +7,7 @@ import { ChatResponse } from '../../interfaces/bots/bot.interface';
 @Injectable({ providedIn: 'root' })
 export class WidgetApiService {
   private readonly http = inject(HttpClient);
-  private readonly baseUrl = 'http://localhost:8000/api/v1';
+  private readonly baseUrl: string = 'http://localhost:8000/api/v1';
 
   getConfig(apiKey: string): Promise<WidgetConfig> {
     const params = new HttpParams().set('api_key', apiKey);

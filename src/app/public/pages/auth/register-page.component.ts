@@ -7,6 +7,8 @@ import {
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AuthApiService } from '../../../auth/services/auth/auth-api.service';
+import { RegisterForm } from '../../../auth/interfaces/auth/user.interface';
+import { httpErrorStatus } from '../../../shared/utils/http-error';
 
 @Component({
   selector: 'app-register-page',
@@ -18,7 +20,7 @@ import { AuthApiService } from '../../../auth/services/auth/auth-api.service';
 export class RegisterPageComponent {
   private readonly authApi = inject(AuthApiService);
 
-  protected readonly form = {
+  protected readonly form: RegisterForm = {
     email: '',
     password: '',
     confirmPassword: '',
@@ -26,12 +28,19 @@ export class RegisterPageComponent {
     last_name: '',
   };
 
-  protected readonly loading = signal(false);
+  protected readonly loading = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
-  protected readonly success = signal(false);
+  protected readonly success = signal<boolean>(false);
 
   async onSubmit(): Promise<void> {
-    if (!this.form.email.trim() || !this.form.password || !this.form.first_name.trim() || !this.form.last_name.trim()) return;
+    if (
+      this.form.email.trim().length === 0 ||
+      this.form.password.length === 0 ||
+      this.form.first_name.trim().length === 0 ||
+      this.form.last_name.trim().length === 0
+    ) {
+      return;
+    }
 
     if (this.form.password !== this.form.confirmPassword) {
       this.error.set('Passwords do not match.');
@@ -50,7 +59,7 @@ export class RegisterPageComponent {
       });
       this.success.set(true);
     } catch (e: unknown) {
-      const status = (e as { status?: number })?.status;
+      const status: number | null = httpErrorStatus(e);
       if (status === 409) {
         this.error.set('An account with this email already exists.');
       } else {

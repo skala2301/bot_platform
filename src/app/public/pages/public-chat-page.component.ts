@@ -8,18 +8,15 @@ import {
   DestroyRef,
   ElementRef,
   viewChild,
+  Signal,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { WidgetApiService } from '../../auth/services/bots/widget-api.service';
 import { WidgetConfig } from '../../auth/interfaces/bots/widget.interface';
-import { ChatSource } from '../../auth/interfaces/bots/bot.interface';
-
-interface ChatMessage {
-  role: 'user' | 'bot';
-  content: string;
-  sources?: ChatSource[];
-}
+import { ChatResponse } from '../../auth/interfaces/bots/bot.interface';
+import { ChatMessage } from '../../auth/interfaces/bots/chat.interface';
+import { httpErrorStatus } from '../../shared/utils/http-error';
 
 @Component({
   selector: 'app-public-chat-page',
@@ -34,24 +31,29 @@ export class PublicChatPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly messagesContainer = viewChild<ElementRef>('messagesContainer');
+  protected readonly messagesContainer: Signal<ElementRef<HTMLElement> | undefined> =
+    viewChild<ElementRef<HTMLElement>>('messagesContainer');
 
   private readonly apiKey = signal<string | null>(null);
   private readonly widgetConfig = signal<WidgetConfig | null>(null);
   protected readonly messages = signal<ChatMessage[]>([]);
-  protected readonly question = signal('');
-  protected readonly sending = signal(false);
-  protected readonly loading = signal(true);
+  protected readonly question = signal<string>('');
+  protected readonly sending = signal<boolean>(false);
+  protected readonly loading = signal<boolean>(true);
   protected readonly error = signal<string | null>(null);
-  protected openSources = signal<Set<string>>(new Set());
-  protected openReferences = signal<Set<string>>(new Set());
+  protected openSources = signal<Set<string>>(new Set<string>());
+  protected openReferences = signal<Set<string>>(new Set<string>());
 
-  protected readonly botName = computed(() => this.widgetConfig()?.name ?? 'Assistant');
-  protected readonly hasApiKey = computed(() => !!this.apiKey());
+  protected readonly botName: Signal<string> = computed(
+    (): string => this.widgetConfig()?.name ?? 'Assistant'
+  );
+  protected readonly hasApiKey: Signal<boolean> = computed(
+    (): boolean => this.apiKey() !== null
+  );
 
   ngOnInit(): void {
-    const key = this.route.snapshot.queryParamMap.get('api_key');
-    if (key) {
+    const key: string | null = this.route.snapshot.queryParamMap.get('api_key');
+    if (key !== null && key.length > 0) {
       this.apiKey.set(key);
       this.loadBotViaWidget(key);
     } else {
@@ -62,12 +64,12 @@ export class PublicChatPageComponent implements OnInit {
 
   private async loadBotViaWidget(apiKey: string): Promise<void> {
     try {
-      const config = await this.widgetApi.getConfig(apiKey);
+      const config: WidgetConfig = await this.widgetApi.getConfig(apiKey);
       if (this.destroyRef.destroyed) return;
       this.widgetConfig.set(config);
     } catch (e: unknown) {
       if (this.destroyRef.destroyed) return;
-      const status = (e as { status?: number })?.status;
+      const status: number | null = httpErrorStatus(e);
       if (status === 401) {
         this.error.set('Invalid or revoked API key.');
       } else {
@@ -79,33 +81,36 @@ export class PublicChatPageComponent implements OnInit {
   }
 
   async onSend(): Promise<void> {
-    const q = this.question().trim();
-    const key = this.apiKey();
-    if (!q || !key || this.sending()) return;
+    const q: string = this.question().trim();
+    const key: string | null = this.apiKey();
+    if (q.length === 0 || key === null || this.sending()) return;
 
     this.question.set('');
     this.sending.set(true);
 
-    this.messages.update((msgs) => [...msgs, { role: 'user', content: q }]);
+    this.messages.update((msgs: ChatMessage[]): ChatMessage[] => [
+      ...msgs,
+      { role: 'user', content: q },
+    ]);
     this.scrollToBottom();
 
     try {
-      const res = await this.widgetApi.chat(key, q);
+      const res: ChatResponse = await this.widgetApi.chat(key, q);
       if (this.destroyRef.destroyed) return;
-      this.messages.update((msgs) => [
+      this.messages.update((msgs: ChatMessage[]): ChatMessage[] => [
         ...msgs,
         { role: 'bot', content: res.answer, sources: res.sources },
       ]);
     } catch (e: unknown) {
       if (this.destroyRef.destroyed) return;
-      const status = (e as { status?: number })?.status;
+      const status: number | null = httpErrorStatus(e);
       if (status === 401) {
-        this.messages.update((msgs) => [
+        this.messages.update((msgs: ChatMessage[]): ChatMessage[] => [
           ...msgs,
           { role: 'bot', content: 'API key is invalid or has been revoked.' },
         ]);
       } else {
-        this.messages.update((msgs) => [
+        this.messages.update((msgs: ChatMessage[]): ChatMessage[] => [
           ...msgs,
           { role: 'bot', content: 'Sorry, something went wrong. Please try again.' },
         ]);
@@ -117,17 +122,25 @@ export class PublicChatPageComponent implements OnInit {
   }
 
   toggleReferences(index: string): void {
-    this.openReferences.update(set => {
-      const next = new Set(set);
-      next.has(index) ? next.delete(index) : next.add(index);
+    this.openReferences.update((set: Set<string>): Set<string> => {
+      const next: Set<string> = new Set<string>(set);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
       return next;
     });
   }
 
   toggleSource(index: string): void {
-    this.openSources.update(set => {
-      const next = new Set(set);
-      next.has(index) ? next.delete(index) : next.add(index);
+    this.openSources.update((set: Set<string>): Set<string> => {
+      const next: Set<string> = new Set<string>(set);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
       return next;
     });
   }
@@ -137,8 +150,8 @@ export class PublicChatPageComponent implements OnInit {
   }
 
   private scrollToBottom(): void {
-    setTimeout(() => {
-      const el = this.messagesContainer()?.nativeElement;
+    setTimeout((): void => {
+      const el: HTMLElement | undefined = this.messagesContainer()?.nativeElement;
       if (el) el.scrollTop = el.scrollHeight;
     });
   }

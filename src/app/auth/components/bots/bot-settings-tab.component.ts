@@ -11,10 +11,16 @@ import {
 import { FormsModule } from '@angular/forms';
 import { BotApiService } from '../../services/bots/bot-api.service';
 import { ModelApiService } from '../../services/bots/model-api.service';
-import { Bot, BotUpdate } from '../../interfaces/bots/bot.interface';
+import {
+  Bot,
+  BotUpdate,
+  BotFormData,
+  LanguageOption,
+} from '../../interfaces/bots/bot.interface';
 import { ModelLocation } from '../../interfaces/bots/model.interface';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog.component';
 import { BotModelSelectorComponent } from './bot-model-selector.component';
+import { httpErrorDetail } from '../../../shared/utils/http-error';
 
 @Component({
   selector: 'app-bot-settings-tab',
@@ -31,24 +37,24 @@ export class BotSettingsTabComponent implements OnInit {
   bot = input.required<Bot>();
   botUpdated = output<Bot>();
 
-  protected readonly saving = signal(false);
-  protected readonly savingModel = signal(false);
+  protected readonly saving = signal<boolean>(false);
+  protected readonly savingModel = signal<boolean>(false);
   protected readonly error = signal<string | null>(null);
   protected readonly success = signal<string | null>(null);
-  protected readonly showConfirm = signal(false);
+  protected readonly showConfirm = signal<boolean>(false);
 
   protected readonly modelLocation = signal<ModelLocation | null>(null);
   protected readonly modelName = signal<string | null>(null);
 
-  protected form = {
+  protected form: BotFormData = {
     name: '',
-    language_code: '' as string | null,
-    system_prompt: '' as string | null,
-    tone: '' as string | null,
-    fallback_message: '' as string | null,
+    language_code: '',
+    system_prompt: '',
+    tone: '',
+    fallback_message: '',
   };
 
-  protected readonly languages = [
+  protected readonly languages: ReadonlyArray<LanguageOption> = [
     { code: '', label: 'None' },
     { code: 'en', label: 'English' },
     { code: 'es', label: 'Spanish' },
@@ -58,7 +64,7 @@ export class BotSettingsTabComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    const b = this.bot();
+    const b: Bot = this.bot();
     this.form = {
       name: b.name,
       language_code: b.language_code ?? '',
@@ -97,7 +103,7 @@ export class BotSettingsTabComponent implements OnInit {
     };
 
     try {
-      const updated = await this.api.updateBot(this.bot().uid, payload);
+      const updated: Bot = await this.api.updateBot(this.bot().uid, payload);
       if (this.destroyRef.destroyed) return;
       this.botUpdated.emit(updated);
       this.success.set('Bot updated successfully.');
@@ -110,8 +116,8 @@ export class BotSettingsTabComponent implements OnInit {
   }
 
   async onSaveModel(): Promise<void> {
-    const location = this.modelLocation();
-    const name = this.modelName();
+    const location: ModelLocation | null = this.modelLocation();
+    const name: string | null = this.modelName();
     if (!location || !name) return;
 
     this.savingModel.set(true);
@@ -119,7 +125,7 @@ export class BotSettingsTabComponent implements OnInit {
     this.success.set(null);
 
     try {
-      const updated = await this.modelApi.selectBotModel(this.bot().uid, {
+      const updated: Bot = await this.modelApi.selectBotModel(this.bot().uid, {
         model_name: name,
         model_location: location,
       });
@@ -128,8 +134,8 @@ export class BotSettingsTabComponent implements OnInit {
       this.success.set('Model updated successfully.');
     } catch (e: unknown) {
       if (this.destroyRef.destroyed) return;
-      const detail = (e as { error?: { detail?: string } })?.error?.detail;
-      this.error.set(detail || 'Failed to update model.');
+      const detail: string | null = httpErrorDetail(e);
+      this.error.set(detail ?? 'Failed to update model.');
     } finally {
       this.savingModel.set(false);
     }
