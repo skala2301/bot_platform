@@ -1,21 +1,21 @@
 <!-- Error -->
 @if (error(); as err) {
-  <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+  <div class="mb-4 p-4 bg-danger-tint border border-danger/40 text-danger-dark rounded-lg text-sm">
     {{ err }}
   </div>
 }
 
 <!-- Success -->
 @if (success(); as msg) {
-  <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+  <div class="mb-4 p-4 bg-success-tint border border-success/40 text-success-dark rounded-lg text-sm">
     {{ msg }}
   </div>
 }
 
-<form (ngSubmit)="onSaveRequest()" class="bg-white rounded-lg border border-gray-200 p-6 space-y-5">
+<form (ngSubmit)="onSaveRequest()" class="bg-white rounded-lg border border-slate-200 p-6 space-y-5">
   <!-- Name -->
   <div>
-    <label for="edit-name" class="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+    <label for="edit-name" class="block text-sm font-medium text-slate-700 mb-1">Name *</label>
     <input
       id="edit-name"
       type="text"
@@ -23,18 +23,18 @@
       name="name"
       required
       maxlength="255"
-      class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+      class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary outline-none"
     />
   </div>
 
   <!-- Language -->
   <div>
-    <label for="edit-language" class="block text-sm font-medium text-gray-700 mb-1">Language</label>
+    <label for="edit-language" class="block text-sm font-medium text-slate-700 mb-1">Language</label>
     <select
       id="edit-language"
       [(ngModel)]="form.language_code"
       name="language_code"
-      class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+      class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary outline-none"
     >
       @for (lang of languages; track lang.code) {
         <option [value]="lang.code">{{ lang.label }}</option>
@@ -44,47 +44,47 @@
 
   <!-- System Prompt -->
   <div>
-    <label for="edit-prompt" class="block text-sm font-medium text-gray-700 mb-1">System Prompt</label>
+    <label for="edit-prompt" class="block text-sm font-medium text-slate-700 mb-1">System Prompt</label>
     <textarea
       id="edit-prompt"
       [(ngModel)]="form.system_prompt"
       name="system_prompt"
       rows="3"
-      class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-y"
+      class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary outline-none resize-y"
     ></textarea>
   </div>
 
   <!-- Tone -->
   <div>
-    <label for="edit-tone" class="block text-sm font-medium text-gray-700 mb-1">Tone</label>
+    <label for="edit-tone" class="block text-sm font-medium text-slate-700 mb-1">Tone</label>
     <input
       id="edit-tone"
       type="text"
       [(ngModel)]="form.tone"
       name="tone"
       maxlength="50"
-      class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+      class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary outline-none"
     />
   </div>
 
   <!-- Fallback Message -->
   <div>
-    <label for="edit-fallback" class="block text-sm font-medium text-gray-700 mb-1">Fallback Message</label>
+    <label for="edit-fallback" class="block text-sm font-medium text-slate-700 mb-1">Fallback Message</label>
     <input
       id="edit-fallback"
       type="text"
       [(ngModel)]="form.fallback_message"
       name="fallback_message"
-      class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+      class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary outline-none"
     />
   </div>
 
   <!-- Actions -->
-  <div class="flex justify-end pt-4 border-t border-gray-100">
+  <div class="flex justify-end pt-4 border-t border-slate-100">
     <button
       type="submit"
       [disabled]="saving() || !form.name.trim()"
-      class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      class="px-4 py-2 text-sm font-medium text-white bg-brand-primary rounded-lg hover:bg-brand-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
     >
       @if (saving()) {
         Saving...
@@ -96,15 +96,15 @@
 </form>
 
 <!-- Model Selection -->
-<div class="bg-white rounded-lg border border-gray-200 p-6 mt-6">
-  <h3 class="text-base font-semibold text-gray-900 mb-1">Model</h3>
-  <p class="text-xs text-gray-500 mb-4">
+<div class="bg-white rounded-lg border border-slate-200 p-6 mt-6">
+  <h3 class="text-base font-semibold text-slate-900 mb-1">Model</h3>
+  <p class="text-xs text-slate-500 mb-4">
     Change the LLM that powers this bot. Current:
     @if (bot().model_name) {
-      <span class="font-mono text-gray-700">{{ bot().model_name }}</span>
-      <span class="text-gray-400"> ({{ bot().model_location }})</span>
+      <span class="font-mono text-slate-700">{{ bot().model_name }}</span>
+      <span class="text-slate-400"> ({{ bot().model_location }})</span>
     } @else {
-      <span class="italic text-gray-400">using server default</span>
+      <span class="italic text-slate-400">using server default</span>
     }
   </p>
 
@@ -121,7 +121,7 @@
       type="button"
       [disabled]="savingModel() || !modelLocation() || !modelName() || !modelChanged()"
       (click)="onSaveModel()"
-      class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      class="px-4 py-2 text-sm font-medium text-white bg-brand-primary rounded-lg hover:bg-brand-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
     >
       @if (savingModel()) { Saving... } @else { Update Model }
     </button>
@@ -134,7 +134,7 @@
     [title]="'Save Changes'"
     [message]="'Are you sure you want to update this bot\'s configuration?'"
     [confirmText]="'Save'"
-    [confirmClass]="'bg-indigo-600 hover:bg-indigo-700'"
+    [confirmClass]="'bg-brand-primary hover:bg-brand-secondary'"
     (confirmed)="onSaveConfirm()"
     (cancelled)="showConfirm.set(false)"
   />

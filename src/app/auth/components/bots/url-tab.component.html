@@ -1,8 +1,8 @@
 <div class="space-y-6">
   <!-- Add URL form -->
-  <div class="bg-white rounded-lg border border-gray-200 p-6">
-    <h3 class="text-base font-semibold text-gray-900 mb-3">Add URL</h3>
-    <p class="text-sm text-gray-500 mb-4">Scrape a webpage and ingest its content into the bot's knowledge base.</p>
+  <div class="bg-white rounded-lg border border-slate-200 p-6">
+    <h3 class="text-base font-semibold text-slate-900 mb-3">Add URL</h3>
+    <p class="text-sm text-slate-500 mb-4">Scrape a webpage and ingest its content into the bot's knowledge base.</p>
 
     <form (ngSubmit)="onSubmit()" class="flex gap-3">
       <input
@@ -11,12 +11,12 @@
         (ngModelChange)="urlInput.set($event)"
         name="url"
         placeholder="https://example.com/page"
-        class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+        class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary outline-none"
       />
       <button
         type="submit"
         [disabled]="submitting() || !urlInput().trim()"
-        class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
+        class="px-4 py-2 text-sm font-medium text-white bg-brand-primary rounded-lg hover:bg-brand-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
       >
         @if (submitting()) {
           Adding...
@@ -29,7 +29,7 @@
 
   <!-- Error -->
   @if (error(); as err) {
-    <div class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+    <div class="p-4 bg-danger-tint border border-danger/40 text-danger-dark rounded-lg text-sm">
       {{ err }}
     </div>
   }
@@ -37,7 +37,7 @@
   <!-- Active jobs -->
   @if (activeJobs().length > 0) {
     <div class="space-y-3">
-      <h3 class="text-sm font-semibold text-gray-700">Processing URLs</h3>
+      <h3 class="text-sm font-semibold text-slate-700">Processing URLs</h3>
       @for (job of activeJobs(); track job.jobId) {
         <app-ingestion-job
           [jobId]="job.jobId"

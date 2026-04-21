@@ -1,16 +1,16 @@
 <div class="max-w-4xl mx-auto">
   <!-- Header -->
   <div class="mb-6">
-    <a routerLink="/bots" class="text-sm text-indigo-600 hover:text-indigo-800 mb-2 inline-block">&larr; Back to Bots</a>
+    <a routerLink="/bots" class="text-sm text-brand-secondary hover:underline mb-2 inline-block">&larr; Back to Bots</a>
 
     @if (bot(); as b) {
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900">{{ b.name }}</h1>
-          <p class="text-sm text-gray-500 mt-1">{{ b.slug }}</p>
+          <h1 class="text-2xl font-bold text-slate-900">{{ b.name }}</h1>
+          <p class="text-sm text-slate-500 mt-1">{{ b.slug }}</p>
         </div>
         <button
-          class="px-4 py-2 text-sm font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors cursor-pointer"
+          class="px-4 py-2 text-sm font-medium text-danger-dark bg-danger-tint rounded-lg hover:bg-danger-tint transition-colors cursor-pointer"
           (click)="showDeleteConfirm.set(true)"
         >
           Delete Bot
@@ -21,7 +21,7 @@
 
   <!-- Error -->
   @if (error(); as err) {
-    <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+    <div class="mb-4 p-4 bg-danger-tint border border-danger/40 text-danger-dark rounded-lg text-sm">
       {{ err }}
     </div>
   }
@@ -29,20 +29,20 @@
   <!-- Loading -->
   @if (loading()) {
     <div class="flex justify-center py-12">
-      <div class="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      <div class="w-8 h-8 border-4 border-info-tint border-t-brand-primary rounded-full animate-spin"></div>
     </div>
   } @else if (bot(); as b) {
     <!-- Tabs -->
-    <div class="border-b border-gray-200 mb-6">
+    <div class="border-b border-slate-200 mb-6">
       <nav class="flex gap-6 -mb-px">
         @for (tab of tabs; track tab.id) {
           <button
             class="pb-3 text-sm font-medium border-b-2 transition-colors cursor-pointer"
-            [class.border-indigo-600]="activeTab() === tab.id"
-            [class.text-indigo-600]="activeTab() === tab.id"
+            [class.border-brand-primary]="activeTab() === tab.id"
+            [class.text-brand-secondary]="activeTab() === tab.id"
             [class.border-transparent]="activeTab() !== tab.id"
-            [class.text-gray-500]="activeTab() !== tab.id"
-            [class.hover:text-gray-700]="activeTab() !== tab.id"
+            [class.text-slate-500]="activeTab() !== tab.id"
+            [class.hover:text-slate-700]="activeTab() !== tab.id"
             (click)="activeTab.set(tab.id)"
           >
             {{ tab.label }}

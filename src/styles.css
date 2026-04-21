@@ -1,5 +1,74 @@
 @import 'tailwindcss';
 
+/* -----------------------------------------------------------------------------
+   Trapezzio design tokens (Tailwind v4 @theme)
+   Usage:
+     bg-brand-primary, text-brand-secondary, hover:bg-brand-accent
+     bg-success-tint, text-success-dark, border-success
+     bg-danger, bg-danger-tint, text-danger-dark
+     bg-warning-tint, text-warning-dark, border-warning
+     bg-info-tint, text-info
+   Neutrals use the built-in slate-* scale (matches the spec's hex values).
+----------------------------------------------------------------------------- */
+@theme {
+  /* Brand */
+  --color-brand-primary: #00263E;
+  --color-brand-secondary: #004976;
+  --color-brand-accent: #A2D40A;
+  --color-brand-neutral: #E5E7EB;
+
+  /* Success */
+  --color-success: #007549;
+  --color-success-tint: #E6F2EC;
+  --color-success-dark: #00563A;
+
+  /* Warning */
+  --color-warning: #FFB443;
+  --color-warning-tint: #FFF4E0;
+  --color-warning-dark: #8A5A00;
+
+  /* Danger */
+  --color-danger: #E74C3C;
+  --color-danger-tint: #FCE8E6;
+  --color-danger-dark: #B33A2E;
+
+  /* Info (same hex as brand-secondary) */
+  --color-info: #004976;
+  --color-info-tint: #E0ECF4;
+}
+
+/* Non-Tailwind contexts (SVG strokes, charts, external libs) */
+:root {
+  --color-brand-primary: #00263E;
+  --color-brand-secondary: #004976;
+  --color-brand-accent: #A2D40A;
+  --color-brand-neutral: #E5E7EB;
+
+  --color-success: #007549;
+  --color-success-tint: #E6F2EC;
+  --color-success-dark: #00563A;
+
+  --color-warning: #FFB443;
+  --color-warning-tint: #FFF4E0;
+  --color-warning-dark: #8A5A00;
+
+  --color-danger: #E74C3C;
+  --color-danger-tint: #FCE8E6;
+  --color-danger-dark: #B33A2E;
+
+  --color-info: #004976;
+  --color-info-tint: #E0ECF4;
+
+  --surface-base: #F8FAFC;
+  --surface-raised: #FFFFFF;
+  --surface-sunken: #F1F5F9;
+  --border-subtle: #E2E8F0;
+  --border-default: #CBD5E1;
+  --text-muted: #64748B;
+  --text-secondary: #475569;
+  --text-primary: #0F172A;
+}
+
 html,
 body {
   height: 100%;
@@ -7,6 +76,8 @@ body {
   padding: 0;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  background-color: var(--surface-base);
+  color: var(--text-primary);
 }
 
 app-root {

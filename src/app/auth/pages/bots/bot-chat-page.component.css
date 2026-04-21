@@ -4,8 +4,8 @@
   height: calc(100vh - 8rem);
   max-width: 48rem;
   margin: 0 auto;
-  background-color: #fff;
-  border: 1px solid #e5e7eb;
+  background-color: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
   border-radius: 0.75rem;
   overflow: hidden;
 }

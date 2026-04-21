@@ -15,7 +15,7 @@ export class ConfirmDialogComponent {
   title = input('Confirm Action');
   message = input('Are you sure you want to proceed?');
   confirmText = input('Confirm');
-  confirmClass = input('bg-red-600 hover:bg-red-700');
+  confirmClass = input('bg-danger hover:bg-danger-dark');
 
   confirmed = output<void>();
   cancelled = output<void>();

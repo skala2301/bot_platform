@@ -1,13 +1,13 @@
-<div class="bg-gray-50 rounded-lg border border-gray-200 p-4">
+<div class="bg-slate-50 rounded-lg border border-slate-200 p-4">
   <div class="flex items-center justify-between mb-2">
-    <span class="text-sm font-medium text-gray-700">{{ label() }}</span>
+    <span class="text-sm font-medium text-slate-700">{{ label() }}</span>
     <div class="flex items-center gap-3">
       @if (estimatedTime()) {
-        <span class="text-xs text-gray-500">{{ estimatedTime() }}</span>
+        <span class="text-xs text-slate-500">{{ estimatedTime() }}</span>
       }
       @if (status() !== 'done' && status() !== 'failed' && !isCancelled()) {
         <button
-          class="text-xs text-red-600 hover:text-red-800 font-medium cursor-pointer"
+          class="text-xs text-danger-dark hover:underline font-medium cursor-pointer"
           (click)="onCancel()"
         >
           Cancel
@@ -17,12 +17,12 @@
   </div>
 
   <!-- Progress bar -->
-  <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+  <div class="w-full bg-slate-200 rounded-full h-2 mb-2">
     <div
       class="h-2 rounded-full transition-all duration-500"
-      [class.bg-indigo-600]="status() !== 'failed' && !isCancelled()"
-      [class.bg-red-500]="status() === 'failed'"
-      [class.bg-gray-400]="isCancelled()"
+      [class.bg-brand-primary]="status() !== 'failed' && !isCancelled()"
+      [class.bg-danger]="status() === 'failed'"
+      [class.bg-slate-400]="isCancelled()"
       [style.width.%]="progress()"
     ></div>
   </div>
@@ -31,25 +31,25 @@
   <div class="flex items-center gap-2">
     @switch (status()) {
       @case ('done') {
-        <span class="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
-        <span class="text-xs text-green-700">Completed</span>
+        <span class="inline-block w-2 h-2 bg-success rounded-full"></span>
+        <span class="text-xs text-success-dark">Completed</span>
       }
       @case ('failed') {
-        <span class="inline-block w-2 h-2 bg-red-500 rounded-full"></span>
-        <span class="text-xs text-red-700">Failed</span>
+        <span class="inline-block w-2 h-2 bg-danger rounded-full"></span>
+        <span class="text-xs text-danger-dark">Failed</span>
       }
       @default {
         @if (isCancelled()) {
-          <span class="inline-block w-2 h-2 bg-gray-400 rounded-full"></span>
-          <span class="text-xs text-gray-500">Cancelled</span>
+          <span class="inline-block w-2 h-2 bg-slate-400 rounded-full"></span>
+          <span class="text-xs text-slate-500">Cancelled</span>
         } @else {
-          <span class="inline-block w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
-          <span class="text-xs text-gray-500 capitalize">{{ status() }}</span>
+          <span class="inline-block w-2 h-2 bg-brand-primary rounded-full animate-pulse"></span>
+          <span class="text-xs text-slate-500 capitalize">{{ status() }}</span>
         }
       }
     }
     @if (detail()) {
-      <span class="text-xs text-gray-400">&mdash; {{ detail() }}</span>
+      <span class="text-xs text-slate-400">&mdash; {{ detail() }}</span>
     }
   </div>
 </div>

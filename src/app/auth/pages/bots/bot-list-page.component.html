@@ -2,13 +2,13 @@
   <!-- Header -->
   <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="text-2xl font-bold text-gray-900">Bots</h1>
-      <p class="text-sm text-gray-500 mt-1">Manage your chatbots</p>
+      <h1 class="text-2xl font-bold text-slate-900">Bots</h1>
+      <p class="text-sm text-slate-500 mt-1">Manage your chatbots</p>
     </div>
     @if (currentOrgUid()) {
       <a
         routerLink="/bots/create"
-        class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+        class="inline-flex items-center gap-2 px-4 py-2.5 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-secondary transition-colors"
       >
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -20,7 +20,7 @@
 
   <!-- Error -->
   @if (error(); as err) {
-    <div class="mb-4 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+    <div class="mb-4 p-4 bg-danger-tint border border-danger/40 text-danger-dark rounded-lg text-sm">
       {{ err }}
     </div>
   }
@@ -28,35 +28,35 @@
   @if (loading()) {
     <!-- Loading spinner -->
     <div class="flex justify-center py-12">
-      <div class="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      <div class="w-8 h-8 border-4 border-info-tint border-t-brand-primary rounded-full animate-spin"></div>
     </div>
   } @else if (hasNoOrg()) {
     <!-- No organization yet -->
-    <div class="text-center py-16 bg-white rounded-lg border border-dashed border-gray-300">
-      <div class="w-14 h-14 mx-auto mb-4 bg-amber-50 rounded-full flex items-center justify-center">
-        <svg class="w-7 h-7 text-amber-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+    <div class="text-center py-16 bg-white rounded-lg border border-dashed border-slate-300">
+      <div class="w-14 h-14 mx-auto mb-4 bg-warning-tint rounded-full flex items-center justify-center">
+        <svg class="w-7 h-7 text-warning-dark" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
         </svg>
       </div>
-      <h3 class="text-base font-semibold text-gray-900 mb-1">You're not part of any organization</h3>
-      <p class="text-sm text-gray-500 mb-4">Create an organization to start building bots.</p>
+      <h3 class="text-base font-semibold text-slate-900 mb-1">You're not part of any organization</h3>
+      <p class="text-sm text-slate-500 mb-4">Create an organization to start building bots.</p>
       <a routerLink="/organization/create"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+        class="inline-flex items-center gap-2 px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-secondary transition-colors">
         Create Organization
       </a>
     </div>
   } @else if (bots().length === 0) {
     <!-- Org selected, no bots -->
-    <div class="text-center py-16 bg-white rounded-lg border border-dashed border-gray-300">
-      <div class="w-14 h-14 mx-auto mb-4 bg-indigo-50 rounded-full flex items-center justify-center">
-        <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+    <div class="text-center py-16 bg-white rounded-lg border border-dashed border-slate-300">
+      <div class="w-14 h-14 mx-auto mb-4 bg-info-tint rounded-full flex items-center justify-center">
+        <svg class="w-7 h-7 text-brand-secondary" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
         </svg>
       </div>
-      <h3 class="text-base font-semibold text-gray-900 mb-1">No bots yet</h3>
-      <p class="text-sm text-gray-500 mb-4">Create your first bot to start training it with your knowledge.</p>
+      <h3 class="text-base font-semibold text-slate-900 mb-1">No bots yet</h3>
+      <p class="text-sm text-slate-500 mb-4">Create your first bot to start training it with your knowledge.</p>
       <a routerLink="/bots/create"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+        class="inline-flex items-center gap-2 px-4 py-2 bg-brand-primary text-white text-sm font-medium rounded-lg hover:bg-brand-secondary transition-colors">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>

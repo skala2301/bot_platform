@@ -29,6 +29,7 @@ export class ApiKeyListComponent implements OnInit {
   keyCreated = output<ApiKeyCreated>();
 
   protected readonly keys = signal<ApiKeyOut[]>([]);
+  protected readonly listUnavailable = signal(false);
   protected readonly loading = signal(true);
   protected readonly creating = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -47,9 +48,16 @@ export class ApiKeyListComponent implements OnInit {
       const data = await this.api.listApiKeys(this.botUid());
       if (this.destroyRef.destroyed) return;
       this.keys.set(data);
-    } catch {
+      this.listUnavailable.set(false);
+    } catch (e: unknown) {
       if (this.destroyRef.destroyed) return;
-      this.keys.set([]);
+      const status = (e as { status?: number })?.status;
+      // 405 = endpoint not implemented on the backend; fall back to session-only tracking
+      if (status === 405 || status === 404) {
+        this.listUnavailable.set(true);
+      } else {
+        this.error.set('Failed to load API keys.');
+      }
     } finally {
       this.loading.set(false);
     }
@@ -68,10 +76,29 @@ export class ApiKeyListComponent implements OnInit {
       this.newlyCreatedKey.set(created);
       this.newLabel.set('');
       this.keyCreated.emit(created);
-      await this.loadKeys();
-    } catch {
+
+      // Add to local list (works regardless of whether listApiKeys is available)
+      const asListItem: ApiKeyOut = {
+        uid: created.uid,
+        bot_uid: created.bot_uid,
+        status: created.status,
+        label: created.label,
+        created_at: created.created_at,
+      };
+      this.keys.update((list) => [asListItem, ...list.filter((k) => k.uid !== created.uid)]);
+    } catch (e: unknown) {
       if (this.destroyRef.destroyed) return;
-      this.error.set('Failed to create API key.');
+      const status = (e as { status?: number })?.status;
+      const detail = (e as { error?: { detail?: string } })?.error?.detail;
+      if (status === 401) {
+        this.error.set('Your session expired or you lack the `bot:manage_keys` permission. Please sign out and sign in again, or ask an admin to grant the permission.');
+      } else if (status === 403) {
+        this.error.set('You do not have permission to create API keys for this bot.');
+      } else if (typeof detail === 'string') {
+        this.error.set(detail);
+      } else {
+        this.error.set('Failed to create API key.');
+      }
     } finally {
       this.creating.set(false);
     }
@@ -86,10 +113,14 @@ export class ApiKeyListComponent implements OnInit {
     try {
       await this.api.revokeApiKey(this.botUid(), key.uid);
       if (this.destroyRef.destroyed) return;
-      await this.loadKeys();
-    } catch {
+      // Update local state: mark the key as revoked
+      this.keys.update((list) =>
+        list.map((k) => (k.uid === key.uid ? { ...k, status: 'revoked' } : k))
+      );
+    } catch (e: unknown) {
       if (this.destroyRef.destroyed) return;
-      this.error.set('Failed to revoke API key.');
+      const detail = (e as { error?: { detail?: string } })?.error?.detail;
+      this.error.set(typeof detail === 'string' ? detail : 'Failed to revoke API key.');
     }
   }
 

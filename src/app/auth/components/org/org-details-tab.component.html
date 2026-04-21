@@ -1,27 +1,27 @@
 @if (error(); as err) {
-  <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">{{ err }}</div>
+  <div class="mb-4 p-3 bg-danger-tint border border-danger/40 text-danger-dark rounded-lg text-sm">{{ err }}</div>
 }
 @if (success(); as msg) {
-  <div class="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">{{ msg }}</div>
+  <div class="mb-4 p-3 bg-success-tint border border-success/40 text-success-dark rounded-lg text-sm">{{ msg }}</div>
 }
 
 <!-- Edit form -->
-<div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-  <h3 class="text-base font-semibold text-gray-900 mb-4">Organization Details</h3>
+<div class="bg-white rounded-lg border border-slate-200 p-6 mb-6">
+  <h3 class="text-base font-semibold text-slate-900 mb-4">Organization Details</h3>
   <div class="space-y-4">
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Name</label>
       <input type="text" [(ngModel)]="form.name" name="name"
-        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" />
+        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary outline-none" />
     </div>
     <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1">Label</label>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Label</label>
       <input type="text" [(ngModel)]="form.label" name="label"
-        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none" />
+        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-secondary focus:border-brand-secondary outline-none" />
     </div>
     <div class="flex justify-end">
       <button (click)="onSave()" [disabled]="saving() || !form.name.trim()"
-        class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+        class="px-4 py-2 text-sm font-medium text-white bg-brand-primary rounded-lg hover:bg-brand-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
         @if (saving()) { Saving... } @else { Save Changes }
       </button>
     </div>
@@ -29,51 +29,51 @@
 </div>
 
 <!-- Info -->
-<div class="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-  <h3 class="text-sm font-semibold text-gray-700 mb-3">Details</h3>
+<div class="bg-white rounded-lg border border-slate-200 p-6 mb-6">
+  <h3 class="text-sm font-semibold text-slate-700 mb-3">Details</h3>
   <dl class="grid sm:grid-cols-2 gap-4 text-sm">
-    <div><dt class="text-gray-500">Slug</dt><dd class="font-medium text-gray-900">{{ org().slug }}</dd></div>
-    <div><dt class="text-gray-500">Plan</dt><dd class="font-medium text-gray-900 capitalize">{{ org().plan }}</dd></div>
+    <div><dt class="text-slate-500">Slug</dt><dd class="font-medium text-slate-900">{{ org().slug }}</dd></div>
+    <div><dt class="text-slate-500">Plan</dt><dd class="font-medium text-slate-900 capitalize">{{ org().plan }}</dd></div>
     <div>
-      <dt class="text-gray-500">Status</dt>
+      <dt class="text-slate-500">Status</dt>
       <dd>
         <span class="px-2 py-0.5 text-xs font-medium rounded-full"
-          [class.bg-green-100]="org().status === 'active'" [class.text-green-700]="org().status === 'active'"
-          [class.bg-amber-100]="org().status === 'suspended'" [class.text-amber-700]="org().status === 'suspended'"
-          [class.bg-red-100]="org().status === 'closed'" [class.text-red-700]="org().status === 'closed'">
+          [class.bg-success-tint]="org().status === 'active'" [class.text-success-dark]="org().status === 'active'"
+          [class.bg-warning-tint]="org().status === 'suspended'" [class.text-warning-dark]="org().status === 'suspended'"
+          [class.bg-danger-tint]="org().status === 'closed'" [class.text-danger-dark]="org().status === 'closed'">
           {{ org().status }}
         </span>
       </dd>
     </div>
-    <div><dt class="text-gray-500">Created</dt><dd class="font-medium text-gray-900">{{ org().created_at | date:'medium' }}</dd></div>
+    <div><dt class="text-slate-500">Created</dt><dd class="font-medium text-slate-900">{{ org().created_at | date:'medium' }}</dd></div>
   </dl>
 </div>
 
 <!-- Status management -->
-<div class="bg-white rounded-lg border border-gray-200 p-6">
-  <h3 class="text-sm font-semibold text-gray-700 mb-3">Status Management</h3>
+<div class="bg-white rounded-lg border border-slate-200 p-6">
+  <h3 class="text-sm font-semibold text-slate-700 mb-3">Status Management</h3>
   <div class="flex flex-wrap gap-2">
     @if (org().status !== 'active') {
       <button (click)="onStatusChange('active')"
-        class="px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 rounded-lg hover:bg-green-100 transition-colors cursor-pointer">
+        class="px-3 py-1.5 text-xs font-medium text-success-dark bg-success-tint rounded-lg hover:bg-success-tint transition-colors cursor-pointer">
         Activate
       </button>
     }
     @if (org().status === 'active') {
       <button (click)="onStatusChange('suspended')"
-        class="px-3 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 rounded-lg hover:bg-amber-100 transition-colors cursor-pointer">
+        class="px-3 py-1.5 text-xs font-medium text-warning-dark bg-warning-tint rounded-lg hover:bg-warning-tint transition-colors cursor-pointer">
         Suspend
       </button>
     }
     @if (org().status !== 'closed') {
       <button (click)="onStatusChange('closed')"
-        class="px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 transition-colors cursor-pointer">
+        class="px-3 py-1.5 text-xs font-medium text-danger-dark bg-danger-tint rounded-lg hover:bg-danger-tint transition-colors cursor-pointer">
         Close
       </button>
     }
     @if (org().status === 'closed') {
       <button (click)="showDeleteConfirm.set(true)"
-        class="px-3 py-1.5 text-xs font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors cursor-pointer">
+        class="px-3 py-1.5 text-xs font-medium text-white bg-danger rounded-lg hover:bg-danger-dark transition-colors cursor-pointer">
         Delete Permanently
       </button>
     }
